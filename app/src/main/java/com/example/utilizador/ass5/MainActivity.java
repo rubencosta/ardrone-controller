@@ -1,6 +1,7 @@
 package com.example.utilizador.ass5;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -47,12 +48,10 @@ public class MainActivity extends Activity {
 
     private AccelerometerSensorListener acc_listener = new AccelerometerSensorListener();
 
-    Button b;
     Socket socket = null;
     DataOutputStream dataOutputStream = null;
     DataInputStream dataInputStream = null;
-    String serverIPAdress = "192.168.173.50";
-    int serverPort = 3001;
+
 
 
     TabHost _tab;
@@ -68,14 +67,34 @@ public class MainActivity extends Activity {
     Button _rotateRight;
     Button _up;
     Button _down;
+    Button _config;
+
+    String serverIPAdress;
+    int serverPort;
 
 
     byte[] response = new byte[256];
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        connectSocket();
+        serverIPAdress = Settings.get(Settings.SERVER_IP);
+        serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        Settings.set_sharedPref(getApplicationContext().getSharedPreferences("ConfigIp", 0));
+        Settings.loadConfig();
+
+        serverIPAdress = Settings.get(Settings.SERVER_IP);
+
+        serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
 
         _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -102,19 +121,7 @@ public class MainActivity extends Activity {
         _tab.addTab(tabSpec);
 
 
-        new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] params) {
-                try {
-                    socket = new Socket(serverIPAdress, serverPort);
-                    dataOutputStream = new DataOutputStream(socket.getOutputStream());
-                    dataInputStream = new DataInputStream(socket.getInputStream());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        }.execute();
+        connectSocket();
 
         //<Rotate Left>
         _rotateLeft = (Button) findViewById(R.id.left_btn);
@@ -149,7 +156,7 @@ public class MainActivity extends Activity {
                 return false;
             }
         });
-        //</Rotate Left>
+        //</Rotate Right>
 
         //<Up>
         _up = (Button) findViewById(R.id.up_btn);
@@ -206,30 +213,43 @@ public class MainActivity extends Activity {
     }
 
     private void onLeft() {
-
            if(_isLeft == true) {
-               new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
-               Log.i("Button", "counterClockwise");
+               new CommandWorkerThread("[\"Clockwise\",[0.7],1]\n").start();
+               Log.i("Button", "Clockwise");
            }
-
            else {
                 new CommandWorkerThread("[\"stop\",[],1]\n").start();
                 Log.i("Button", "counterClockwise-stop");
            }
     }
 
-    private void onRight() {
+    public void connectSocket(){
+        new AsyncTask() {
+            @Override
+            protected Object doInBackground(Object[] params) {
+                try {
+                    socket = new Socket(serverIPAdress, serverPort);
+                    dataOutputStream = new DataOutputStream(socket.getOutputStream());
+                    dataInputStream = new DataInputStream(socket.getInputStream());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
+    }
 
+    public void onRight() {
         if(_isRight == true) {
-            new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
-            Log.i("Button", "Clockwise");
+            new CommandWorkerThread("[\"counterclockwise\",[0.7],1]\n").start();
+            Log.i("Button", "counterClockwise");
         }
-
         else {
             new CommandWorkerThread("[\"stop\",[],1]\n").start();
-            Log.i("Button", "Clockwise-stop");
+            Log.i("Button", "counterClockwise-stop");
         }
     }
+
     public void onUp(){
         if(_isUp) {
             new CommandWorkerThread("[\"up\",[0.7],2]\n").start();
@@ -260,14 +280,12 @@ public class MainActivity extends Activity {
         new CommandWorkerThread("[\"takeoff\",[],1]\n").start();
         takeOff.setVisibility(View.INVISIBLE);
         land.setVisibility(View.VISIBLE);
-
     }
 
     public void onFlipAheadClick(View v) {
         Random ran = new Random();
         int num = ran.nextInt(4);
         Log.i(FLIP, String.valueOf(num));
-
         if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"flipAhead\",1000] ,2]\n").start();
         else if (num == 1)
@@ -281,7 +299,6 @@ public class MainActivity extends Activity {
         Random ran = new Random();
         int num = ran.nextInt(1);
         Log.i(PHI, String.valueOf(num));
-
         if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"phiM30Deg\",1000] ,2]\n").start();
         else
@@ -293,7 +310,6 @@ public class MainActivity extends Activity {
         Random ran = new Random();
         int num = ran.nextInt(4);
         Log.i(THETA, String.valueOf(num));
-
         if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"thetaM30Deg\",1000] ,2]\n").start();
         else if (num == 1)
@@ -307,7 +323,6 @@ public class MainActivity extends Activity {
         Random ran = new Random();
         int num = ran.nextInt(1);
         Log.i(TURN, String.valueOf(num));
-
         if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"turnaround\",1000] ,2]\n").start();
         else
@@ -318,7 +333,6 @@ public class MainActivity extends Activity {
         Random ran = new Random();
         int num = ran.nextInt(5);
         Log.i(DANCE, String.valueOf(num));
-
         if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"yawShake\",1000] ,2]\n").start();
         else if (num == 1)
@@ -334,7 +348,6 @@ public class MainActivity extends Activity {
         Random ran = new Random();
         int num = ran.nextInt(1);
         Log.i(MIX, String.valueOf(num));
-
         if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"phiThetaMixed\",1000] ,2]\n").start();
         else
@@ -394,6 +407,11 @@ public class MainActivity extends Activity {
         Intent i = new Intent(this, VideoViewActivity.class);
         startActivity(i);
     }*/
+
+    public void onConfigClick(View v){
+        Intent i = new Intent(this, Configs.class);
+        startActivity(i);
+    }
 
 
     @Override
