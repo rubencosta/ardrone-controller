@@ -43,13 +43,13 @@ public class MainActivity extends Activity {
     private float lastX = 0;
     private float lastY = 0;
 
-    float []gravity={0,0,0};
-    float []linear_acceleration={0,0,0};
+    float[] gravity = {0, 0, 0};
+    float[] linear_acceleration = {0, 0, 0};
     final float alpha = 0.8f;
 
     private SensorManager _sensorManager;
 
-    private AccelerometerSensorListener acc_listener   = new AccelerometerSensorListener();
+    private AccelerometerSensorListener acc_listener = new AccelerometerSensorListener();
 
     Button b;
     Socket socket = null;
@@ -57,6 +57,9 @@ public class MainActivity extends Activity {
     DataInputStream dataInputStream = null;
     String serverIPAdress = "192.168.173.50";
     int serverPort = 3001;
+
+    Boolean _isControl = false;
+    Button _control;
 
     byte[] response = new byte[256];
 
@@ -68,7 +71,7 @@ public class MainActivity extends Activity {
         _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         Sensor accSensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if(accSensor!=null)
+        if (accSensor != null)
             _sensorManager.registerListener(acc_listener, accSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
         TabHost tab = (TabHost) findViewById(R.id.tabHost);
@@ -99,22 +102,22 @@ public class MainActivity extends Activity {
                     socket = new Socket(serverIPAdress, serverPort);
                     dataOutputStream = new DataOutputStream(socket.getOutputStream());
                     dataInputStream = new DataInputStream(socket.getInputStream());
-                }catch(Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return null;
             }
         }.execute();
 
-       Button rotateLeft = (Button)findViewById(R.id.left_btn);
+        Button rotateLeft = (Button) findViewById(R.id.left_btn);
 
         rotateLeft.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
                     Log.i("Button", "Clockwise");
-                } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
                     Log.i("Button", "Clockwise-stop");
 
@@ -123,15 +126,15 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button rotateRight = (Button)findViewById(R.id.right_btn);
+        Button rotateRight = (Button) findViewById(R.id.right_btn);
 
         rotateRight.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
                     Log.i("Button", "counterClockwise");
-                } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
                     Log.i("Button", "counterClockwise-stop");
                 }
@@ -139,15 +142,15 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button up = (Button)findViewById(R.id.up_btn);
+        Button up = (Button) findViewById(R.id.up_btn);
 
         up.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     new CommandWorkerThread("[\"up\",[0.7],2]\n").start();
                     Log.i("Button", "up");
-                } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
                     Log.i("Button", "up stop");
                 }
@@ -155,15 +158,15 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button down = (Button)findViewById(R.id.down_btn);
+        Button down = (Button) findViewById(R.id.down_btn);
 
         down.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     new CommandWorkerThread("[\"down\",[0.7],1]\n").start();
                     Log.i("Button", "down");
-                } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
                     Log.i("Button", "up stop");
                 }
@@ -171,45 +174,26 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button control = (Button)findViewById(R.id.control_btn);
+        _control = (Button) findViewById(R.id.control_btn);
 
-        control.setOnTouchListener(new View.OnTouchListener() {
-       @Override
-       public boolean onTouch(View v, MotionEvent event) {
-            if(event.getAction() == KeyEvent.ACTION_DOWN) {
-                if(_x >= 0) {
-                    new CommandWorkerThread("[\"back\",[" + _x + "],2]\n").start();
-                    Log.i("Gravity", "back = " + _x);
-                }
+        _control.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    _isControl = true;
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                    _isControl = false;
+                    new CommandWorkerThread("[\"stop\",[],1]\n").start();
 
-                else {
-                    _x= Math.abs(_x);
-                    new CommandWorkerThread("[\"front\",[" + _x + "],2]\n").start();
-                    Log.i("Gravity", "front = " + _x);
                 }
-
-                if( _y >= 0) {
-                    new CommandWorkerThread("[\"right\",[" + _y + "],2]\n").start();
-                    Log.i("Gravity", "Right = " + _y);
-                }
-                else{
-                    _y= Math.abs(_y);
-                    new CommandWorkerThread("[\"left\",[" + _y + "],2]\n").start();
-                    Log.i("Gravity", "left = " + _y);
-                }
+                return false;
             }
-
-            else if(event.getAction() == KeyEvent.ACTION_UP) {
-                new CommandWorkerThread("[\"stop\",[],1]\n").start();
-            }
-            return false;
-    }
-});
+        });
 
 
     }
 
-    public void onTakeOffClick(View v){
+    public void onTakeOffClick(View v) {
         new CommandWorkerThread("[\"calibrate\",[],1]\n").start();
         Button land = (Button) findViewById(R.id.land_btn);
         Button takeOff = (Button) findViewById(R.id.takeoff_btn);
@@ -224,83 +208,84 @@ public class MainActivity extends Activity {
         int num = ran.nextInt(4);
         Log.i(FLIP, String.valueOf(num));
 
-        if(num == 0)
+        if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"flipAhead\",1000] ,2]\n").start();
-        else if (num ==1)
+        else if (num == 1)
             new CommandWorkerThread("[\"animate\",[\"flipBehind\",1000] ,2]\n").start();
         else if (num == 2)
             new CommandWorkerThread("[\"animate\",[\"flipLeft\",1000] ,2]\n").start();
-        else  new CommandWorkerThread("[\"animate\",[\"flipRight\",1000] ,2]\n").start();
+        else new CommandWorkerThread("[\"animate\",[\"flipRight\",1000] ,2]\n").start();
     }
 
-    public void onPhiM30DegClick(View v){
+    public void onPhiM30DegClick(View v) {
         Random ran = new Random();
         int num = ran.nextInt(1);
         Log.i(PHI, String.valueOf(num));
 
-        if(num == 0)
+        if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"phiM30Deg\",1000] ,2]\n").start();
         else
             new CommandWorkerThread("[\"animate\",[\"phi30Deg\",1000] ,2]\n").start();
     }
 
 
-    public void onThetaClick(View v){
+    public void onThetaClick(View v) {
         Random ran = new Random();
         int num = ran.nextInt(4);
         Log.i(THETA, String.valueOf(num));
 
-        if(num == 0)
+        if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"thetaM30Deg\",1000] ,2]\n").start();
-        else if(num == 1)
+        else if (num == 1)
             new CommandWorkerThread("[\"animate\",[\"theta30Deg\",1000] ,2]\n").start();
-        else if(num == 2)
+        else if (num == 2)
             new CommandWorkerThread("[\"animate\",[\"theta20degYaw200deg\",1000] ,2]\n").start();
-        else  new CommandWorkerThread("[\"animate\",[\"theta20degYawM200deg\",1000] ,2]\n").start();
+        else new CommandWorkerThread("[\"animate\",[\"theta20degYawM200deg\",1000] ,2]\n").start();
     }
 
-    public void onTurnClick(View v){
+    public void onTurnClick(View v) {
         Random ran = new Random();
         int num = ran.nextInt(1);
         Log.i(TURN, String.valueOf(num));
 
-        if(num == 0)
+        if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"turnaround\",1000] ,2]\n").start();
         else
             new CommandWorkerThread("[\"animate\",[\"turnaroundGodown\",1000] ,2]\n").start();
     }
 
-    public void onDanceClick(View v){
+    public void onDanceClick(View v) {
         Random ran = new Random();
         int num = ran.nextInt(5);
         Log.i(DANCE, String.valueOf(num));
 
-        if(num == 0)
+        if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"yawShake\",1000] ,2]\n").start();
-        else if(num == 1)
+        else if (num == 1)
             new CommandWorkerThread("[\"animate\",[\"yawDance\",1000] ,2]\n").start();
-        else if(num == 2)
+        else if (num == 2)
             new CommandWorkerThread("[\"animate\",[\"thetaDance\",1000] ,2]\n").start();
-        else  if(num == 3)
+        else if (num == 3)
             new CommandWorkerThread("[\"animate\",[\"vzDance\",1000] ,2]\n").start();
-        else  new CommandWorkerThread("[\"animate\",[\"wave\",1000] ,2]\n").start();
+        else new CommandWorkerThread("[\"animate\",[\"wave\",1000] ,2]\n").start();
     }
 
-    public void onMixedClick(View v){
+    public void onMixedClick(View v) {
         Random ran = new Random();
         int num = ran.nextInt(1);
         Log.i(MIX, String.valueOf(num));
 
-        if(num == 0)
+        if (num == 0)
             new CommandWorkerThread("[\"animate\",[\"phiThetaMixed\",1000] ,2]\n").start();
         else
             new CommandWorkerThread("[\"animate\",[\"doublePhiThetaMixed\",1000] ,2]\n").start();
     }
 
 
-    public void onControlClick(View v){
+    public void onControlClick(View v) {
 
     }
+
     /*public void onLeftClick(View v){
         new CommandWorkerThread("[\"left\",[0.2],2]\n").start();
     }
@@ -310,7 +295,7 @@ public class MainActivity extends Activity {
         new CommandWorkerThread("[\"right\",[0.2],2]\n").start();
     }
 */
-    public void landCommandClick(View v){
+    public void landCommandClick(View v) {
         new CommandWorkerThread("[\"land\",[],1]\n").start();
         Button land = (Button) findViewById(R.id.land_btn);
         Button takeOff = (Button) findViewById(R.id.takeoff_btn);
@@ -353,11 +338,6 @@ public class MainActivity extends Activity {
     }*/
 
 
-
-
-
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -390,17 +370,16 @@ public class MainActivity extends Activity {
     }
 
 
+    private class CommandWorkerThread extends Thread {
 
-    private class CommandWorkerThread extends Thread{
+        private String _command = "";
 
-        private String _command="";
-
-        public CommandWorkerThread(String command){
+        public CommandWorkerThread(String command) {
             _command = command;
         }
 
         @Override
-        public void run(){
+        public void run() {
             try {
 
                 Log.i(TAG, "sending request");
@@ -414,7 +393,7 @@ public class MainActivity extends Activity {
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -444,14 +423,33 @@ public class MainActivity extends Activity {
             linear_acceleration[2] = sensorEvent.values[2] - gravity[2];
 
 
-            x= (float) ((gravity[0]) * 0.1);
-            y= (float) ((gravity[1]) * 0.1);
+            _x = (float) ((gravity[0]) * 0.1);
+            _y = (float) ((gravity[1]) * 0.1);
 
             //Log.i("Sensor Listener", "gravity "+x + " y: " + y); //[0] =x, frente-tras ; [1] = y, esquerda-direita
             //Log.i("Sensor Listener", "linear_acceleration "+linear_acceleration[0]+" "+linear_acceleration[1]+" "+linear_acceleration[2]);
-            _x = x;
-            _y = y;
+            if(_isControl){
+                if(_x >= 0) {
+                    new CommandWorkerThread("[\"back\",[" + _x + "],2]\n").start();
+                    Log.i("Gravity", "back = " + _x);
+                }
 
+                else {
+                    _x= Math.abs(_x);
+                    new CommandWorkerThread("[\"front\",[" + _x + "],2]\n").start();
+                    Log.i("Gravity", "front = " + _x);
+                }
+
+                if( _y >= 0) {
+                    new CommandWorkerThread("[\"right\",[" + _y + "],2]\n").start();
+                    Log.i("Gravity", "Right = " + _y);
+                }
+                else{
+                    _y= Math.abs(_y);
+                    new CommandWorkerThread("[\"left\",[" + _y + "],2]\n").start();
+                    Log.i("Gravity", "left = " + _y);
+                }
+            }
 
 
         }
@@ -466,93 +464,84 @@ public class MainActivity extends Activity {
     public static String HORIZONTAL_SPEED = "horizontal_speed";
     public static String ROTATION_SPEED = "rotation_speed";
 
-    private static ConfPair [] keyArray = {
-            new ConfPair (SERVER_IP,           "192.168.1.3"),
-            new ConfPair (SERVER_PORT,         "3001"),
-            new ConfPair (SWIPE_THRESHOLD,     "3"),
-            new ConfPair (MAXIMUM_INTERVAL,    "300"),  //(300) times beyond this interval will resilt in a speed of zero ( the bigger the number, the slower it will run)
-            new ConfPair (FLYING_MODE,         "gravity"),
-            new ConfPair (VERTICAL_SPEED,      "1"),
-            new ConfPair (HORIZONTAL_SPEED,    "1"),
-            new ConfPair (ROTATION_SPEED,      "1")
+    private static ConfPair[] keyArray = {
+            new ConfPair(SERVER_IP, "192.168.1.3"),
+            new ConfPair(SERVER_PORT, "3001"),
+            new ConfPair(SWIPE_THRESHOLD, "3"),
+            new ConfPair(MAXIMUM_INTERVAL, "300"),  //(300) times beyond this interval will resilt in a speed of zero ( the bigger the number, the slower it will run)
+            new ConfPair(FLYING_MODE, "gravity"),
+            new ConfPair(VERTICAL_SPEED, "1"),
+            new ConfPair(HORIZONTAL_SPEED, "1"),
+            new ConfPair(ROTATION_SPEED, "1")
     };
 
     private static ArrayList<ConfPair> data = new ArrayList<ConfPair>();
     private static SharedPreferences _sharedPref;
 
-    public static void set(ConfPair confPair)
-    {
-        if(data.contains(confPair)) {
+    public static void set(ConfPair confPair) {
+        if (data.contains(confPair)) {
             data.get(data.indexOf(confPair)).value = confPair.value;
-        }
-        else {
+        } else {
             data.add(confPair);
 //            fdsfdsffopd
         }
     }
 
-    public static void set(String key, String value)
-    {
+    public static void set(String key, String value) {
         set(new ConfPair(key, value));
     }
 
-    public static String get(ConfPair confPair)
-    {
-        if(data.contains(confPair)) {
+    public static String get(ConfPair confPair) {
+        if (data.contains(confPair)) {
             return data.get(data.indexOf(confPair)).value;
         }
         return null;
     }
 
-    public static String get(String key)
-    {
+    public static String get(String key) {
         return get(new ConfPair(key, ""));
     }
 
-    public static void set_sharedPref(SharedPreferences pref)
-    {
+    public static void set_sharedPref(SharedPreferences pref) {
         _sharedPref = pref;
     }
 
-    public static void loadConfig(){
+    public static void loadConfig() {
         data.clear();
-        for(ConfPair confPair : keyArray) {
+        for (ConfPair confPair : keyArray) {
             String value = _sharedPref.getString(confPair.key, "error_not_found");
-            if(value == "error_not_found") {
+            if (value == "error_not_found") {
                 data.add(new ConfPair(confPair.key, confPair.value));
                 Log.i("Config load", confPair.key + "=" + confPair.value);
-            }
-            else {
+            } else {
                 data.add(new ConfPair(confPair.key, value));
                 Log.i("Config load", confPair.key + "=" + value);
             }
         }
     }
 
-    public static void saveConfig(){
+    public static void saveConfig() {
         SharedPreferences.Editor editor = _sharedPref.edit();
 
-        for(ConfPair confPair : keyArray) {
+        for (ConfPair confPair : keyArray) {
             editor.putString(confPair.key, get(confPair.key));
             Log.i("Config save", confPair.key + "=" + get(confPair.key));
         }
         editor.commit();
     }
 
-    public static class ConfPair
-    {
+    public static class ConfPair {
         public String key;
         public String value;
 
-        public ConfPair(String aKey, String aValue)
-        {
+        public ConfPair(String aKey, String aValue) {
             key = aKey;
             value = aValue;
         }
 
         @Override
         public boolean equals(Object o) {
-            return ((ConfPair)o).key == key;
+            return ((ConfPair) o).key == key;
         }
     }
 }
