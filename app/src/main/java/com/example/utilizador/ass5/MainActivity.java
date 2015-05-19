@@ -1,18 +1,14 @@
 package com.example.utilizador.ass5;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -23,7 +19,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Random;
 
 
@@ -48,6 +43,7 @@ public class MainActivity extends Activity {
     final float alpha = 0.8f;
 
     private SensorManager _sensorManager;
+    private Sensor _accSensor;
 
     private AccelerometerSensorListener acc_listener = new AccelerometerSensorListener();
 
@@ -58,8 +54,21 @@ public class MainActivity extends Activity {
     String serverIPAdress = "192.168.173.50";
     int serverPort = 3001;
 
+
+    TabHost _tab;
+
     Boolean _isControl = false;
+    Boolean _isUp = false;
+    Boolean _isDown = false;
+    Boolean _isRight = false;
+    Boolean _isLeft = false;
+
     Button _control;
+    Button _rotateLeft;
+    Button _rotateRight;
+    Button _up;
+    Button _down;
+
 
     byte[] response = new byte[256];
 
@@ -70,30 +79,28 @@ public class MainActivity extends Activity {
 
         _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-        Sensor accSensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (accSensor != null)
-            _sensorManager.registerListener(acc_listener, accSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        _accSensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (_accSensor != null)
+            _sensorManager.registerListener(acc_listener, _accSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
-        TabHost tab = (TabHost) findViewById(R.id.tabHost);
-
-        tab.setup();
-
-        TabHost.TabSpec tabSpec = tab.newTabSpec("Fligth Mode");
+        //Tab Creation
+        _tab = (TabHost) findViewById(R.id.tabHost);
+        _tab.setup();
+        TabHost.TabSpec tabSpec = _tab.newTabSpec("Fligth Mode");
         tabSpec.setContent(R.id.tabFly);
         tabSpec.setIndicator("Fligth Mode");
-        tab.addTab(tabSpec);
+        _tab.addTab(tabSpec);
 
-        tabSpec = tab.newTabSpec("Closer Mode");
+        tabSpec = _tab.newTabSpec("Closer Mode");
         tabSpec.setContent(R.id.tabCloser);
         tabSpec.setIndicator("Closer Mode");
-        tab.addTab(tabSpec);
+        _tab.addTab(tabSpec);
 
-        tabSpec = tab.newTabSpec("Tricks");
+        tabSpec = _tab.newTabSpec("Tricks");
         tabSpec.setContent(R.id.Tricks);
         tabSpec.setIndicator("Tricks Mode");
-        tab.addTab(tabSpec);
+        _tab.addTab(tabSpec);
 
-        //b = (Button)findViewById(R.id.takeoff_btn);
 
         new AsyncTask() {
             @Override
@@ -109,73 +116,78 @@ public class MainActivity extends Activity {
             }
         }.execute();
 
-        Button rotateLeft = (Button) findViewById(R.id.left_btn);
-
-        rotateLeft.setOnTouchListener(new View.OnTouchListener() {
+        //<Rotate Left>
+        _rotateLeft = (Button) findViewById(R.id.left_btn);
+        _rotateLeft.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
-                    Log.i("Button", "Clockwise");
-                } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    new CommandWorkerThread("[\"stop\",[],1]\n").start();
-                    Log.i("Button", "Clockwise-stop");
+                    _isLeft = true;
+                    onLeft();
 
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                    _isLeft = false;
+                    onLeft();
                 }
                 return false;
             }
         });
+        //</Rotate Left>
 
-        Button rotateRight = (Button) findViewById(R.id.right_btn);
-
-        rotateRight.setOnTouchListener(new View.OnTouchListener() {
+        //<Rotate Right>
+        _rotateRight = (Button) findViewById(R.id.right_btn);
+        _rotateRight.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
-                    Log.i("Button", "counterClockwise");
+                   _isRight = true;
+                    onRight();
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    new CommandWorkerThread("[\"stop\",[],1]\n").start();
-                    Log.i("Button", "counterClockwise-stop");
+                   _isRight = false;
+                    onRight();
                 }
                 return false;
             }
         });
+        //</Rotate Left>
 
-        Button up = (Button) findViewById(R.id.up_btn);
-
-        up.setOnTouchListener(new View.OnTouchListener() {
+        //<Up>
+        _up = (Button) findViewById(R.id.up_btn);
+        _up.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    new CommandWorkerThread("[\"up\",[0.7],2]\n").start();
-                    Log.i("Button", "up");
+                    _isUp = true;
+                    onUp();
+
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    new CommandWorkerThread("[\"stop\",[],1]\n").start();
-                    Log.i("Button", "up stop");
+                    _isUp = false;
+                   onUp();
                 }
                 return false;
             }
         });
+        //</Up>
 
-        Button down = (Button) findViewById(R.id.down_btn);
-
-        down.setOnTouchListener(new View.OnTouchListener() {
+        //<Down>
+        _down = (Button) findViewById(R.id.down_btn);
+        _down.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    new CommandWorkerThread("[\"down\",[0.7],1]\n").start();
-                    Log.i("Button", "down");
+                    _isDown = true;
+                    onDown();
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    new CommandWorkerThread("[\"stop\",[],1]\n").start();
-                    Log.i("Button", "up stop");
+                    _isDown =false;
+                    onDown();
                 }
                 return false;
             }
         });
+        //</Down>
 
+        //<Control>
         _control = (Button) findViewById(R.id.control_btn);
-
         _control.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -184,12 +196,60 @@ public class MainActivity extends Activity {
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     _isControl = false;
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
-
                 }
                 return false;
             }
         });
 
+        //</Control>
+
+    }
+
+    private void onLeft() {
+
+           if(_isLeft == true) {
+               new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
+               Log.i("Button", "counterClockwise");
+           }
+
+           else {
+                new CommandWorkerThread("[\"stop\",[],1]\n").start();
+                Log.i("Button", "counterClockwise-stop");
+           }
+    }
+
+    private void onRight() {
+
+        if(_isRight == true) {
+            new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
+            Log.i("Button", "Clockwise");
+        }
+
+        else {
+            new CommandWorkerThread("[\"stop\",[],1]\n").start();
+            Log.i("Button", "Clockwise-stop");
+        }
+    }
+    public void onUp(){
+        if(_isUp) {
+            new CommandWorkerThread("[\"up\",[0.7],2]\n").start();
+            Log.i("Button", "up");
+        }
+        else {
+            new CommandWorkerThread("[\"stop\",[],1]\n").start();
+            Log.i("Button", "up stop");
+        }
+
+    }
+    public void onDown(){
+        if(_isDown) {
+            new CommandWorkerThread("[\"down\",[0.7],2]\n").start();
+            Log.i("Button", "down");
+        }
+        else {
+            new CommandWorkerThread("[\"stop\",[],1]\n").start();
+            Log.i("Button", "down stop");
+        }
 
     }
 
@@ -282,9 +342,7 @@ public class MainActivity extends Activity {
     }
 
 
-    public void onControlClick(View v) {
 
-    }
 
     /*public void onLeftClick(View v){
         new CommandWorkerThread("[\"left\",[0.2],2]\n").start();
@@ -455,93 +513,5 @@ public class MainActivity extends Activity {
         }
     }
 
-    public static String SERVER_IP = "serverIP";
-    public static String SERVER_PORT = "serverPort";
-    public static String SWIPE_THRESHOLD = "_swipe_threshold";
-    public static String MAXIMUM_INTERVAL = "_maximum_interval";
-    public static String FLYING_MODE = "_flying_mode";
-    public static String VERTICAL_SPEED = "vertical_speed";
-    public static String HORIZONTAL_SPEED = "horizontal_speed";
-    public static String ROTATION_SPEED = "rotation_speed";
 
-    private static ConfPair[] keyArray = {
-            new ConfPair(SERVER_IP, "192.168.1.3"),
-            new ConfPair(SERVER_PORT, "3001"),
-            new ConfPair(SWIPE_THRESHOLD, "3"),
-            new ConfPair(MAXIMUM_INTERVAL, "300"),  //(300) times beyond this interval will resilt in a speed of zero ( the bigger the number, the slower it will run)
-            new ConfPair(FLYING_MODE, "gravity"),
-            new ConfPair(VERTICAL_SPEED, "1"),
-            new ConfPair(HORIZONTAL_SPEED, "1"),
-            new ConfPair(ROTATION_SPEED, "1")
-    };
-
-    private static ArrayList<ConfPair> data = new ArrayList<ConfPair>();
-    private static SharedPreferences _sharedPref;
-
-    public static void set(ConfPair confPair) {
-        if (data.contains(confPair)) {
-            data.get(data.indexOf(confPair)).value = confPair.value;
-        } else {
-            data.add(confPair);
-//            fdsfdsffopd
-        }
-    }
-
-    public static void set(String key, String value) {
-        set(new ConfPair(key, value));
-    }
-
-    public static String get(ConfPair confPair) {
-        if (data.contains(confPair)) {
-            return data.get(data.indexOf(confPair)).value;
-        }
-        return null;
-    }
-
-    public static String get(String key) {
-        return get(new ConfPair(key, ""));
-    }
-
-    public static void set_sharedPref(SharedPreferences pref) {
-        _sharedPref = pref;
-    }
-
-    public static void loadConfig() {
-        data.clear();
-        for (ConfPair confPair : keyArray) {
-            String value = _sharedPref.getString(confPair.key, "error_not_found");
-            if (value == "error_not_found") {
-                data.add(new ConfPair(confPair.key, confPair.value));
-                Log.i("Config load", confPair.key + "=" + confPair.value);
-            } else {
-                data.add(new ConfPair(confPair.key, value));
-                Log.i("Config load", confPair.key + "=" + value);
-            }
-        }
-    }
-
-    public static void saveConfig() {
-        SharedPreferences.Editor editor = _sharedPref.edit();
-
-        for (ConfPair confPair : keyArray) {
-            editor.putString(confPair.key, get(confPair.key));
-            Log.i("Config save", confPair.key + "=" + get(confPair.key));
-        }
-        editor.commit();
-    }
-
-    public static class ConfPair {
-        public String key;
-        public String value;
-
-        public ConfPair(String aKey, String aValue) {
-            key = aKey;
-            value = aValue;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return ((ConfPair) o).key == key;
-        }
-    }
 }
