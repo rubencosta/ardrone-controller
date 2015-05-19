@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
     Socket socket = null;
     DataOutputStream dataOutputStream = null;
     DataInputStream dataInputStream = null;
-    String serverIPAdress = "192.168.10.130";
+    String serverIPAdress = "192.168.173.50";
     int serverPort = 3001;
 
     byte[] response = new byte[256];
@@ -113,8 +113,11 @@ public class MainActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == KeyEvent.ACTION_DOWN) {
                     new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
+                    Log.i("Button", "Clockwise");
                 } else if(event.getAction() == KeyEvent.ACTION_UP) {
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
+                    Log.i("Button", "Clockwise-stop");
+
                 }
                 return false;
             }
@@ -127,8 +130,10 @@ public class MainActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == KeyEvent.ACTION_DOWN) {
                     new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
+                    Log.i("Button", "counterClockwise");
                 } else if(event.getAction() == KeyEvent.ACTION_UP) {
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
+                    Log.i("Button", "counterClockwise-stop");
                 }
                 return false;
             }
@@ -141,8 +146,10 @@ public class MainActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == KeyEvent.ACTION_DOWN) {
                     new CommandWorkerThread("[\"up\",[0.7],2]\n").start();
+                    Log.i("Button", "up");
                 } else if(event.getAction() == KeyEvent.ACTION_UP) {
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
+                    Log.i("Button", "up stop");
                 }
                 return false;
             }
@@ -155,8 +162,10 @@ public class MainActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == KeyEvent.ACTION_DOWN) {
                     new CommandWorkerThread("[\"down\",[0.7],1]\n").start();
+                    Log.i("Button", "down");
                 } else if(event.getAction() == KeyEvent.ACTION_UP) {
                     new CommandWorkerThread("[\"stop\",[],1]\n").start();
+                    Log.i("Button", "up stop");
                 }
                 return false;
             }
