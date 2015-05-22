@@ -37,10 +37,10 @@
                     android:orientation="vertical"
                     >
 
-                    <VideoView
+                    <RelativeLayout
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
-                        android:background="@color/background_material_light"/>
+                        android:id="@+id/relativeLayoutVideoView"/>
 
                     <Button
                         android:layout_width="80dp"
@@ -96,7 +96,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_gravity="center_horizontal"
                         android:outlineProvider="paddedBounds"
-                        android:onClick="onControlClick"/>
+                  />
 
                     <Button
 
@@ -131,6 +131,12 @@
                         android:outlineProvider="paddedBounds"
                         android:id="@+id/up_btn"
                     />
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:text="Config"
+                        android:onClick="onConfigClick"/>
 
                     <Button
                         android:layout_width="80dp"
