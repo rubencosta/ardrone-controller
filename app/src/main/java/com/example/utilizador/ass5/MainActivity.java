@@ -246,7 +246,6 @@ public class MainActivity extends Activity {
         tabSpec.setIndicator("Tricks Mode");
         _tab.addTab(tabSpec);
 
-
     }
 
     private void onLeft() {
