@@ -1,7 +1,6 @@
 package com.example.utilizador.ass5;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -9,19 +8,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.TabHost;
-
-import com.example.utilizador.ass5.mjpeg.MjpegInputStream;
-import com.example.utilizador.ass5.mjpeg._MjpegView;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -44,11 +36,8 @@ public class MainActivity extends Activity {
     private float _x = 0;
     private float _y = 0;
 
-    private float lastLeft = 0;
-    private float lastRight = 0;
-    private float lastBack = 0;
-    private float lastFront = 0;
-
+    private float lastX = 0;
+    private float lastY = 0;
 
     float[] gravity = {0, 0, 0};
     float[] linear_acceleration = {0, 0, 0};
@@ -63,11 +52,7 @@ public class MainActivity extends Activity {
     DataOutputStream dataOutputStream = null;
     DataInputStream dataInputStream = null;
 
-    private _MjpegView videoView;
-    ProgressDialog pDialog;
 
-    String videoURL = "http://192.168.0.101:3002/nodecopter.mjpeg";
-    MjpegInputStream _mjp;
 
     TabHost _tab;
 
@@ -96,9 +81,49 @@ public class MainActivity extends Activity {
         connectSocket();
         serverIPAdress = Settings.get(Settings.SERVER_IP);
         serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
 
+        Settings.set_sharedPref(getApplicationContext().getSharedPreferences("ConfigIp", 0));
+        Settings.loadConfig();
 
+        serverIPAdress = Settings.get(Settings.SERVER_IP);
+
+        serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
+
+        _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        _accSensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (_accSensor != null)
+            _sensorManager.registerListener(acc_listener, _accSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+        //Tab Creation
+        _tab = (TabHost) findViewById(R.id.tabHost);
+        _tab.setup();
+        TabHost.TabSpec tabSpec = _tab.newTabSpec("Fligth Mode");
+        tabSpec.setContent(R.id.tabFly);
+        tabSpec.setIndicator("Fligth Mode");
+        _tab.addTab(tabSpec);
+
+        tabSpec = _tab.newTabSpec("Closer Mode");
+        tabSpec.setContent(R.id.tabCloser);
+        tabSpec.setIndicator("Closer Mode");
+        _tab.addTab(tabSpec);
+
+        tabSpec = _tab.newTabSpec("Tricks");
+        tabSpec.setContent(R.id.Tricks);
+        tabSpec.setIndicator("Tricks Mode");
+        _tab.addTab(tabSpec);
+
+
+        connectSocket();
+
+        //<Rotate Left>
         _rotateLeft = (Button) findViewById(R.id.left_btn);
         _rotateLeft.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -122,10 +147,10 @@ public class MainActivity extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    _isRight = true;
+                   _isRight = true;
                     onRight();
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    _isRight = false;
+                   _isRight = false;
                     onRight();
                 }
                 return false;
@@ -144,7 +169,7 @@ public class MainActivity extends Activity {
 
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     _isUp = false;
-                    onUp();
+                   onUp();
                 }
                 return false;
             }
@@ -185,72 +210,11 @@ public class MainActivity extends Activity {
 
         //</Control>
 
-        RelativeLayout videoLayout = (RelativeLayout) findViewById(R.id.relativeLayoutVideoView);
-
-        RelativeLayout.LayoutParams  params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT);
-
-        videoLayout.setLayoutParams(params);
-
-        try{
-            videoView.setSource(_mjp);
-            videoView.setDisplayMode(_MjpegView.SIZE_BEST_FIT);
-            videoView.startPlayback();
-            videoLayout.addView(videoView);
-        }
-        catch (Exception e){e.printStackTrace();}
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        Settings.set_sharedPref(getApplicationContext().getSharedPreferences("ConfigIp", 0));
-        Settings.loadConfig();
-
-        serverIPAdress = Settings.get(Settings.SERVER_IP);
-
-        serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
-
-        _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-        _accSensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (_accSensor != null)
-            _sensorManager.registerListener(acc_listener, _accSensor, SensorManager.SENSOR_DELAY_NORMAL);
-
-        videoURL = ("http://" + serverIPAdress + ":3002/nodecopter.mjpeg");
-        _mjp = new MjpegInputStream(null);
-        _mjp.read(videoURL);
-        connectSocket();
-
-
-
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN, WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        videoView = new _MjpegView(this);
-        setContentView(R.layout.activity_main);
-
-        //Tab Creation
-        _tab = (TabHost) findViewById(R.id.tabHost);
-        _tab.setup();
-        TabHost.TabSpec tabSpec = _tab.newTabSpec("Fligth Mode");
-        tabSpec.setContent(R.id.tabFly);
-        tabSpec.setIndicator("Fligth Mode");
-        _tab.addTab(tabSpec);
-
-        tabSpec = _tab.newTabSpec("Closer Mode");
-        tabSpec.setContent(R.id.tabCloser);
-        tabSpec.setIndicator("Closer Mode");
-        _tab.addTab(tabSpec);
-
-        tabSpec = _tab.newTabSpec("Tricks");
-        tabSpec.setContent(R.id.Tricks);
-        tabSpec.setIndicator("Tricks Mode");
-        _tab.addTab(tabSpec);
-
     }
 
     private void onLeft() {
            if(_isLeft == true) {
-               new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
+               new CommandWorkerThread("[\"Clockwise\",[0.7],1]\n").start();
                Log.i("Button", "Clockwise");
            }
            else {
@@ -277,7 +241,7 @@ public class MainActivity extends Activity {
 
     public void onRight() {
         if(_isRight == true) {
-            new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
+            new CommandWorkerThread("[\"counterclockwise\",[0.7],1]\n").start();
             Log.i("Button", "counterClockwise");
         }
         else {
@@ -410,20 +374,6 @@ public class MainActivity extends Activity {
         takeOff.setVisibility(View.VISIBLE);
 
     }
-
-    public void onPause() {
-        super.onPause();
-        videoView.stopPlayback();
-        try {
-            socket.close();
-            dataInputStream.close();
-            dataOutputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
     /*
 
     public void onCalibrateDroneClick(View v){
@@ -510,7 +460,7 @@ public class MainActivity extends Activity {
 
                 Log.i(TAG, "sending request");
                 dataOutputStream.writeBytes(_command);
-              //  dataInputStream.readFully(response);
+                dataInputStream.readFully(response);
                 dataOutputStream.flush();
 
             } catch (UnknownHostException e) {
@@ -527,8 +477,8 @@ public class MainActivity extends Activity {
 
     private class AccelerometerSensorListener implements SensorEventListener {
 
-        private float calculateX;
-        private float calculateY;
+        private float x;
+        private float y;
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int i) {
@@ -537,7 +487,6 @@ public class MainActivity extends Activity {
 
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
-
 
             // Isolate the force of gravity with the low-pass filter.
             gravity[0] = alpha * gravity[0] + (1 - alpha) * sensorEvent.values[0];
@@ -553,45 +502,28 @@ public class MainActivity extends Activity {
             _x = (float) ((gravity[0]) * 0.1);
             _y = (float) ((gravity[1]) * 0.1);
 
-            calculateX = Math.round(_x * 10f)/10f;
-            calculateY = Math.round(_y * 10f)/10f;
-
-            _x = calculateX;
-            _y = calculateY;
-
-
             //Log.i("Sensor Listener", "gravity "+x + " y: " + y); //[0] =x, frente-tras ; [1] = y, esquerda-direita
             //Log.i("Sensor Listener", "linear_acceleration "+linear_acceleration[0]+" "+linear_acceleration[1]+" "+linear_acceleration[2]);
             if(_isControl){
                 if(_x >= 0) {
-                    if(_x != lastBack || (_x == 0 && lastBack != 0)) {
-                        new CommandWorkerThread("[\"back\",[" + _x + "],2]\n").start();
-                        Log.i("Gravity", "back = " + _x);
-                        lastBack = _x;
-                    }
+                    new CommandWorkerThread("[\"back\",[" + _x + "],2]\n").start();
+                    Log.i("Gravity", "back = " + _x);
                 }
 
                 else {
-                    if(_x != lastFront || (_x == 0 && lastFront != 0)) {
-                        _x = Math.abs(_x);
-                        new CommandWorkerThread("[\"front\",[" + _x + "],2]\n").start();
-                        Log.i("Gravity", "front = " + _x);
-                        lastFront = _x;
-                    }
+                    _x= Math.abs(_x);
+                    new CommandWorkerThread("[\"front\",[" + _x + "],2]\n").start();
+                    Log.i("Gravity", "front = " + _x);
                 }
 
                 if( _y >= 0) {
-                    if(_y != lastRight || (_x == 0 && lastRight != 0))
                     new CommandWorkerThread("[\"right\",[" + _y + "],2]\n").start();
                     Log.i("Gravity", "Right = " + _y);
-                    lastRight = _y;
                 }
                 else{
-                    if(_x != lastLeft || (_x == 0 && lastLeft != 0))
                     _y= Math.abs(_y);
                     new CommandWorkerThread("[\"left\",[" + _y + "],2]\n").start();
                     Log.i("Gravity", "left = " + _y);
-                    lastLeft = _y;
                 }
             }
 
