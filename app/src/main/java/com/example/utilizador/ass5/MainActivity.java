@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TabHost;
 
+import com.example.utilizador.ass5.mjpeg.MjpegInputStream;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -72,6 +74,7 @@ public class MainActivity extends Activity {
     String serverIPAdress;
     int serverPort;
 
+    MjpegInputStream _videoInputStream;
 
     byte[] response = new byte[256];
 
@@ -96,6 +99,11 @@ public class MainActivity extends Activity {
 
         serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
 
+        //Initialize video input stream
+        _videoInputStream = new MjpegInputStream(null);
+
+        //TODO Initialize video view
+
         _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         _accSensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -104,27 +112,23 @@ public class MainActivity extends Activity {
 
         //Tab Creation
         _tab = (TabHost) findViewById(R.id.tabHost);
-        _tab.setup();
-        TabHost.TabSpec tabSpec = _tab.newTabSpec("Fligth Mode");
-        tabSpec.setContent(R.id.tabFly);
-        tabSpec.setIndicator("Fligth Mode");
-        _tab.addTab(tabSpec);
-
-        tabSpec = _tab.newTabSpec("Closer Mode");
-        tabSpec.setContent(R.id.tabCloser);
-        tabSpec.setIndicator("Closer Mode");
-        _tab.addTab(tabSpec);
-
-        tabSpec = _tab.newTabSpec("Tricks");
-        tabSpec.setContent(R.id.Tricks);
-        tabSpec.setIndicator("Tricks Mode");
-        _tab.addTab(tabSpec);
+        setupTabs();
 
 
         connectSocket();
 
-        //<Rotate Left>
         _rotateLeft = (Button) findViewById(R.id.left_btn);
+        _rotateRight = (Button) findViewById(R.id.right_btn);
+        _up = (Button) findViewById(R.id.up_btn);
+        _down = (Button) findViewById(R.id.down_btn);
+        _control = (Button) findViewById(R.id.control_btn);
+        setupButtons();
+
+
+    }
+
+    private void setupButtons() {
+        //<Rotate Left>
         _rotateLeft.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -142,7 +146,6 @@ public class MainActivity extends Activity {
         //</Rotate Left>
 
         //<Rotate Right>
-        _rotateRight = (Button) findViewById(R.id.right_btn);
         _rotateRight.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -159,7 +162,6 @@ public class MainActivity extends Activity {
         //</Rotate Right>
 
         //<Up>
-        _up = (Button) findViewById(R.id.up_btn);
         _up.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -177,7 +179,6 @@ public class MainActivity extends Activity {
         //</Up>
 
         //<Down>
-        _down = (Button) findViewById(R.id.down_btn);
         _down.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -194,7 +195,6 @@ public class MainActivity extends Activity {
         //</Down>
 
         //<Control>
-        _control = (Button) findViewById(R.id.control_btn);
         _control.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -209,7 +209,24 @@ public class MainActivity extends Activity {
         });
 
         //</Control>
+    }
 
+    private void setupTabs() {
+        _tab.setup();
+        TabHost.TabSpec tabSpec = _tab.newTabSpec("Fligth Mode");
+        tabSpec.setContent(R.id.tabFly);
+        tabSpec.setIndicator("Fligth Mode");
+        _tab.addTab(tabSpec);
+
+        tabSpec = _tab.newTabSpec("Closer Mode");
+        tabSpec.setContent(R.id.tabCloser);
+        tabSpec.setIndicator("Closer Mode");
+        _tab.addTab(tabSpec);
+
+        tabSpec = _tab.newTabSpec("Tricks");
+        tabSpec.setContent(R.id.Tricks);
+        tabSpec.setIndicator("Tricks Mode");
+        _tab.addTab(tabSpec);
     }
 
     private void onLeft() {
@@ -261,6 +278,7 @@ public class MainActivity extends Activity {
         }
 
     }
+
     public void onDown(){
         if(_isDown) {
             new CommandWorkerThread("[\"down\",[0.7],2]\n").start();
@@ -304,7 +322,6 @@ public class MainActivity extends Activity {
         else
             new CommandWorkerThread("[\"animate\",[\"phi30Deg\",1000] ,2]\n").start();
     }
-
 
     public void onThetaClick(View v) {
         Random ran = new Random();
