@@ -20,6 +20,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".Configs"
+            android:label="@string/title_activity_configs"
+            android:screenOrientation="landscape">
+        </activity>
     </application>
 
 </manifest>
