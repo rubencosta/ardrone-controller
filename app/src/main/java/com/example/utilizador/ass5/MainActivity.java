@@ -35,12 +35,6 @@ public class MainActivity extends Activity {
     private static final String DANCE = "Dance";
     private static final String TURN = "Turn";
 
-    private float _x = 0;
-    private float _y = 0;
-
-    private float lastX = 0;
-    private float lastY = 0;
-
     float[] gravity = {0, 0, 0};
     float[] linear_acceleration = {0, 0, 0};
     final float alpha = 0.8f;
@@ -48,7 +42,7 @@ public class MainActivity extends Activity {
     private SensorManager _sensorManager;
     private Sensor _accSensor;
 
-    private AccelerometerSensorListener acc_listener = new AccelerometerSensorListener();
+    private AccelerometerSensorListener _accListener = new AccelerometerSensorListener();
 
     Socket socket = null;
     DataOutputStream dataOutputStream = null;
@@ -91,7 +85,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         Settings.set_sharedPref(getApplicationContext().getSharedPreferences("ConfigIp", 0));
         Settings.loadConfig();
 
@@ -104,18 +97,9 @@ public class MainActivity extends Activity {
 
         //TODO Initialize video view
 
-        _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-        _accSensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (_accSensor != null)
-            _sensorManager.registerListener(acc_listener, _accSensor, SensorManager.SENSOR_DELAY_NORMAL);
-
         //Tab Creation
         _tab = (TabHost) findViewById(R.id.tabHost);
         setupTabs();
-
-
-        connectSocket();
 
         _rotateLeft = (Button) findViewById(R.id.left_btn);
         _rotateRight = (Button) findViewById(R.id.right_btn);
@@ -124,6 +108,12 @@ public class MainActivity extends Activity {
         _control = (Button) findViewById(R.id.control_btn);
         setupButtons();
 
+        _sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        _accSensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        if (_accSensor != null)
+            _sensorManager.registerListener(_accListener, _accSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
     }
 
@@ -231,13 +221,24 @@ public class MainActivity extends Activity {
 
     private void onLeft() {
            if(_isLeft == true) {
-               new CommandWorkerThread("[\"Clockwise\",[0.7],1]\n").start();
+               new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
                Log.i("Button", "Clockwise");
            }
            else {
                 new CommandWorkerThread("[\"stop\",[],1]\n").start();
                 Log.i("Button", "counterClockwise-stop");
            }
+    }
+
+    public void onRight() {
+        if(_isRight == true) {
+            new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
+            Log.i("Button", "counterClockwise");
+        }
+        else {
+            new CommandWorkerThread("[\"stop\",[],1]\n").start();
+            Log.i("Button", "counterClockwise-stop");
+        }
     }
 
     public void connectSocket(){
@@ -254,17 +255,6 @@ public class MainActivity extends Activity {
                 return null;
             }
         }.execute();
-    }
-
-    public void onRight() {
-        if(_isRight == true) {
-            new CommandWorkerThread("[\"counterclockwise\",[0.7],1]\n").start();
-            Log.i("Button", "counterClockwise");
-        }
-        else {
-            new CommandWorkerThread("[\"stop\",[],1]\n").start();
-            Log.i("Button", "counterClockwise-stop");
-        }
     }
 
     public void onUp(){
@@ -516,31 +506,31 @@ public class MainActivity extends Activity {
             linear_acceleration[2] = sensorEvent.values[2] - gravity[2];
 
 
-            _x = (float) ((gravity[0]) * 0.1);
-            _y = (float) ((gravity[1]) * 0.1);
+            x = (float) ((gravity[0]) * 0.1);
+            y = (float) ((gravity[1]) * 0.1);
 
-            //Log.i("Sensor Listener", "gravity "+x + " y: " + y); //[0] =x, frente-tras ; [1] = y, esquerda-direita
-            //Log.i("Sensor Listener", "linear_acceleration "+linear_acceleration[0]+" "+linear_acceleration[1]+" "+linear_acceleration[2]);
+            Log.i("Sensor Listener", "gravity "+x + " y: " + y); //[0] =x, frente-tras ; [1] = y, esquerda-direita
+            Log.i("Sensor Listener", "linear_acceleration "+linear_acceleration[0]+" "+linear_acceleration[1]+" "+linear_acceleration[2]);
             if(_isControl){
-                if(_x >= 0) {
-                    new CommandWorkerThread("[\"back\",[" + _x + "],2]\n").start();
-                    Log.i("Gravity", "back = " + _x);
+                if(x >= 0) {
+                    new CommandWorkerThread("[\"back\",[" + x + "],2]\n").start();
+                    Log.i("Gravity", "back = " + x);
                 }
 
                 else {
-                    _x= Math.abs(_x);
-                    new CommandWorkerThread("[\"front\",[" + _x + "],2]\n").start();
-                    Log.i("Gravity", "front = " + _x);
+                    x= Math.abs(x);
+                    new CommandWorkerThread("[\"front\",[" + x + "],2]\n").start();
+                    Log.i("Gravity", "front = " + x);
                 }
 
-                if( _y >= 0) {
-                    new CommandWorkerThread("[\"right\",[" + _y + "],2]\n").start();
-                    Log.i("Gravity", "Right = " + _y);
+                if( y >= 0) {
+                    new CommandWorkerThread("[\"right\",[" + y + "],2]\n").start();
+                    Log.i("Gravity", "Right = " + y);
                 }
                 else{
-                    _y= Math.abs(_y);
-                    new CommandWorkerThread("[\"left\",[" + _y + "],2]\n").start();
-                    Log.i("Gravity", "left = " + _y);
+                    y= Math.abs(y);
+                    new CommandWorkerThread("[\"left\",[" + y + "],2]\n").start();
+                    Log.i("Gravity", "left = " + y);
                 }
             }
 
