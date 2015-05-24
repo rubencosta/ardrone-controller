@@ -89,11 +89,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Configs
         Settings.set_sharedPref(getApplicationContext().getSharedPreferences("ConfigIp", 0));
         Settings.loadConfig();
-
         serverIPAdress = Settings.get(Settings.SERVER_IP);
-
         serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
 
 
