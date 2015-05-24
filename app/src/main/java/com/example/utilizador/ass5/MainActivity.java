@@ -370,16 +370,6 @@ public class MainActivity extends Activity {
             new CommandWorkerThread("[\"animate\",[\"doublePhiThetaMixed\",1000] ,2]\n").start();
     }
 
-
-    /*public void onLeftClick(View v){
-        new CommandWorkerThread("[\"left\",[0.2],2]\n").start();
-    }
-
-
-    public void onRightClick(View v){
-        new CommandWorkerThread("[\"right\",[0.2],2]\n").start();
-    }
-*/
     public void landCommandClick(View v) {
         new CommandWorkerThread("[\"land\",[],1]\n").start();
         Button land = (Button) findViewById(R.id.land_btn);
@@ -388,39 +378,6 @@ public class MainActivity extends Activity {
         takeOff.setVisibility(View.VISIBLE);
 
     }
-    /*
-
-    public void onCalibrateDroneClick(View v){
-        new CommandWorkerThread("[\"calibrate\",[],1]\n").start();
-    }
-
-    public void onUpClick(View v){
-        new CommandWorkerThread("[\"up\",[0.2],2]\n").start();
-
-    }
-
-    public void onDownClick(View v){
-        new CommandWorkerThread("[\"down\",[0.2],1]\n").start();
-    }
-
-    public void onFrontClick(View v){
-        new CommandWorkerThread("[\"front\",[0.2],2]\n").start();
-
-    }
-
-    public void onBackClick(View v){
-        new CommandWorkerThread("[\"back\",[0.2],2]\n").start();
-
-    }
-
-    public void onStopClick(View v){
-        new CommandWorkerThread("[\"stop\",[],1]\n").start();
-    }
-
-    public void onTestVideoStreamClick(View v){
-        Intent i = new Intent(this, VideoViewActivity.class);
-        startActivity(i);
-    }*/
 
     public void onConfigClick(View v) {
         Intent i = new Intent(this, Configs.class);
