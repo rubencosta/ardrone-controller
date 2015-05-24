@@ -82,8 +82,12 @@ public class CloserView extends View {
 
             _velocity = (scaleGestureDetector.getCurrentSpan() - scaleGestureDetector.getPreviousSpan()) * 0.1f;
 
-            _commandWorker.newCommand("[\"front\",[" + _velocity + "],2]\n");
+            if (_scaleGestureDetector.getScaleFactor() > 1) {
+                _commandWorker.newCommand("[\"front\",[0.7],2]\n");
+            } else {
+                _commandWorker.newCommand("[\"back\",[0.7],2]\n");
 
+            }
             return true;
         }
 
