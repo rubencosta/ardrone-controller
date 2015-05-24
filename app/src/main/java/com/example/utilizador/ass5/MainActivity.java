@@ -72,9 +72,7 @@ public class MainActivity extends Activity {
     private RelativeLayout _videoLayout;
     private _MjpegView _mjpegView;
 
-    private View _closerModeView;
-    byte[] response = new byte[256];
-
+    private JoystickView _joystickView;
     private CommandWorker _commandWorker;
 
     @Override
@@ -109,10 +107,8 @@ public class MainActivity extends Activity {
         setupTabs();
 
         //Buttons
-        _rotateLeft = (Button) findViewById(R.id.left_btn);
-        _rotateRight = (Button) findViewById(R.id.right_btn);
-        _up = (Button) findViewById(R.id.up_btn);
-        _down = (Button) findViewById(R.id.down_btn);
+        _joystickView = (JoystickView) findViewById(R.id.joystick);
+        _joystickView.setOnJostickMovedListener(new MyJoystickMovedListener());
         _control = (Button) findViewById(R.id.control_btn);
         setupButtons();
 
@@ -134,71 +130,6 @@ public class MainActivity extends Activity {
     }
 
     private void setupButtons() {
-        //<Rotate Left>
-        _rotateLeft.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    _isLeft = true;
-                    onLeft();
-
-                } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    _isLeft = false;
-                    onLeft();
-                }
-                return false;
-            }
-        });
-        //</Rotate Left>
-
-        //<Rotate Right>
-        _rotateRight.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    _isRight = true;
-                    onRight();
-                } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    _isRight = false;
-                    onRight();
-                }
-                return false;
-            }
-        });
-        //</Rotate Right>
-
-        //<Up>
-        _up.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    _isUp = true;
-                    onUp();
-
-                } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    _isUp = false;
-                    onUp();
-                }
-                return false;
-            }
-        });
-        //</Up>
-
-        //<Down>
-        _down.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    _isDown = true;
-                    onDown();
-                } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    _isDown = false;
-                    onDown();
-                }
-                return false;
-            }
-        });
-        //</Down>
 
         //<Control>
         _control.setOnTouchListener(new View.OnTouchListener() {
@@ -473,4 +404,54 @@ public class MainActivity extends Activity {
     }
 
 
+    private class MyOnTouchListener implements View.OnTouchListener {
+        float _x;
+        float _y;
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            _x = motionEvent.getX();
+            _y = motionEvent.getY();
+
+            switch (motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    startJoystick(_x, _y);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+//                    moveJoystick(_x, _y);
+                    break;
+                case MotionEvent.ACTION_UP:
+//                    stopJoystick();
+                    break;
+            }
+            return true;
+        }
+
+        private void startJoystick(float x, float y) {
+
+        }
+    }
+
+    private class MyJoystickMovedListener implements JoystickMovedListener {
+        @Override
+        public void OnMoved(int pan, int tilt) {
+            Log.i("JOY-X", String.valueOf(pan));
+            _commandWorker.newCommand("[\"counterClockwise\",[" + (pan * 0.1) + "],2]\n");
+
+            Log.i("JOY-Y", String.valueOf(tilt));
+            _commandWorker.newCommand("[\"down\",[" + (tilt * 0.1) + "],2]\n");
+
+        }
+
+        @Override
+        public void OnReleased() {
+            _commandWorker.newCommand("[\"stop\",[],1]\n");
+
+        }
+
+        @Override
+        public void OnReturnedToCenter() {
+            _commandWorker.newCommand("[\"stop\",[],1]\n");
+
+        }
+    }
 }
