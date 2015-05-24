@@ -63,7 +63,6 @@ public class MainActivity extends Activity {
     Button _rotateRight;
     Button _up;
     Button _down;
-    Button _config;
 
     private static final String videoUrl = "http://88.53.197.250/axis-cgi/mjpg/video.cgi?resolution=320x240";
     String serverIPAdress;
@@ -73,26 +72,23 @@ public class MainActivity extends Activity {
     private RelativeLayout _videoLayout;
     private _MjpegView _mjpegView;
 
+    private View _closerModeView;
     byte[] response = new byte[256];
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        connectSocket();
-        serverIPAdress = Settings.get(Settings.SERVER_IP);
-        serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
-    }
+    private CommandWorker _commandWorker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         //Configs
         Settings.set_sharedPref(getApplicationContext().getSharedPreferences("ConfigIp", 0));
         Settings.loadConfig();
-        serverIPAdress = Settings.get(Settings.SERVER_IP);
-        serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
+
+        setContentView(R.layout.activity_main);
+
+
+        _commandWorker = new CommandWorker();
 
 
         //Initialize video
@@ -127,6 +123,14 @@ public class MainActivity extends Activity {
         if (_accSensor != null)
             _sensorManager.registerListener(_accListener, _accSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        connectSocket();
+        serverIPAdress = Settings.get(Settings.SERVER_IP);
+        serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
     }
 
     private void setupButtons() {
@@ -204,7 +208,7 @@ public class MainActivity extends Activity {
                     _isControl = true;
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     _isControl = false;
-                    new CommandWorkerThread("[\"stop\",[],1]\n").start();
+                    _commandWorker.newCommand("[\"stop\",[],1]\n");
                 }
                 return false;
             }
@@ -231,26 +235,6 @@ public class MainActivity extends Activity {
         _tab.addTab(tabSpec);
     }
 
-    private void onLeft() {
-        if (_isLeft == true) {
-            new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
-            Log.i("Button", "Clockwise");
-        } else {
-            new CommandWorkerThread("[\"stop\",[],1]\n").start();
-            Log.i("Button", "counterClockwise-stop");
-        }
-    }
-
-    public void onRight() {
-        if (_isRight == true) {
-            new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
-            Log.i("Button", "counterClockwise");
-        } else {
-            new CommandWorkerThread("[\"stop\",[],1]\n").start();
-            Log.i("Button", "counterClockwise-stop");
-        }
-    }
-
     public void connectSocket() {
         new AsyncTask() {
             @Override
@@ -267,12 +251,32 @@ public class MainActivity extends Activity {
         }.execute();
     }
 
+    private void onLeft() {
+        if (_isLeft == true) {
+            _commandWorker.newCommand("[\"clockwise\",[0.7],1]\n");
+            Log.i("Button", "Clockwise");
+        } else {
+            _commandWorker.newCommand("[\"stop\",[],1]\n");
+            Log.i("Button", "counterClockwise-stop");
+        }
+    }
+
+    public void onRight() {
+        if (_isRight == true) {
+            _commandWorker.newCommand("[\"counterClockwise\",[0.7],1]\n");
+            Log.i("Button", "counterClockwise");
+        } else {
+            _commandWorker.newCommand("[\"stop\",[],1]\n");
+            Log.i("Button", "counterClockwise-stop");
+        }
+    }
+
     public void onUp() {
         if (_isUp) {
-            new CommandWorkerThread("[\"up\",[0.7],2]\n").start();
+            _commandWorker.newCommand("[\"up\",[0.7],2]\n");
             Log.i("Button", "up");
         } else {
-            new CommandWorkerThread("[\"stop\",[],1]\n").start();
+            _commandWorker.newCommand("[\"stop\",[],1]\n");
             Log.i("Button", "up stop");
         }
 
@@ -280,20 +284,20 @@ public class MainActivity extends Activity {
 
     public void onDown() {
         if (_isDown) {
-            new CommandWorkerThread("[\"down\",[0.7],2]\n").start();
+            _commandWorker.newCommand("[\"down\",[0.7],2]\n");
             Log.i("Button", "down");
         } else {
-            new CommandWorkerThread("[\"stop\",[],1]\n").start();
+            _commandWorker.newCommand("[\"stop\",[],1]\n");
             Log.i("Button", "down stop");
         }
 
     }
 
     public void onTakeOffClick(View v) {
-        new CommandWorkerThread("[\"calibrate\",[],1]\n").start();
+        _commandWorker.newCommand("[\"calibrate\",[],1]\n");
         Button land = (Button) findViewById(R.id.land_btn);
         Button takeOff = (Button) findViewById(R.id.takeoff_btn);
-        new CommandWorkerThread("[\"takeoff\",[],1]\n").start();
+        _commandWorker.newCommand("[\"takeoff\",[],1]\n");
         takeOff.setVisibility(View.INVISIBLE);
         land.setVisibility(View.VISIBLE);
     }
@@ -303,12 +307,12 @@ public class MainActivity extends Activity {
         int num = ran.nextInt(4);
         Log.i(FLIP, String.valueOf(num));
         if (num == 0)
-            new CommandWorkerThread("[\"animate\",[\"flipAhead\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"flipAhead\",10] ,2]\n");
         else if (num == 1)
-            new CommandWorkerThread("[\"animate\",[\"flipBehind\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"flipBehind\",10] ,2]\n");
         else if (num == 2)
-            new CommandWorkerThread("[\"animate\",[\"flipLeft\",1000] ,2]\n").start();
-        else new CommandWorkerThread("[\"animate\",[\"flipRight\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"flipLeft\",10] ,2]\n");
+        else _commandWorker.newCommand("[\"animate\",[\"flipRight\",10] ,2]\n");
     }
 
     public void onPhiM30DegClick(View v) {
@@ -316,9 +320,9 @@ public class MainActivity extends Activity {
         int num = ran.nextInt(1);
         Log.i(PHI, String.valueOf(num));
         if (num == 0)
-            new CommandWorkerThread("[\"animate\",[\"phiM30Deg\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"phiM30Deg\",10] ,2]\n");
         else
-            new CommandWorkerThread("[\"animate\",[\"phi30Deg\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"phi30Deg\",10] ,2]\n");
     }
 
     public void onThetaClick(View v) {
@@ -326,12 +330,12 @@ public class MainActivity extends Activity {
         int num = ran.nextInt(4);
         Log.i(THETA, String.valueOf(num));
         if (num == 0)
-            new CommandWorkerThread("[\"animate\",[\"thetaM30Deg\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"thetaM30Deg\",10] ,2]\n");
         else if (num == 1)
-            new CommandWorkerThread("[\"animate\",[\"theta30Deg\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"theta30Deg\",10] ,2]\n");
         else if (num == 2)
-            new CommandWorkerThread("[\"animate\",[\"theta20degYaw200deg\",1000] ,2]\n").start();
-        else new CommandWorkerThread("[\"animate\",[\"theta20degYawM200deg\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"theta20degYaw200deg\",10] ,2]\n");
+        else _commandWorker.newCommand("[\"animate\",[\"theta20degYawM200deg\",10] ,2]\n");
     }
 
     public void onTurnClick(View v) {
@@ -339,9 +343,9 @@ public class MainActivity extends Activity {
         int num = ran.nextInt(1);
         Log.i(TURN, String.valueOf(num));
         if (num == 0)
-            new CommandWorkerThread("[\"animate\",[\"turnaround\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"turnaround\",10] ,2]\n");
         else
-            new CommandWorkerThread("[\"animate\",[\"turnaroundGodown\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"turnaroundGodown\",10] ,2]\n");
     }
 
     public void onDanceClick(View v) {
@@ -349,14 +353,14 @@ public class MainActivity extends Activity {
         int num = ran.nextInt(5);
         Log.i(DANCE, String.valueOf(num));
         if (num == 0)
-            new CommandWorkerThread("[\"animate\",[\"yawShake\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"yawShake\",10] ,2]\n");
         else if (num == 1)
-            new CommandWorkerThread("[\"animate\",[\"yawDance\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"yawDance\",10] ,2]\n");
         else if (num == 2)
-            new CommandWorkerThread("[\"animate\",[\"thetaDance\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"thetaDance\",10] ,2]\n");
         else if (num == 3)
-            new CommandWorkerThread("[\"animate\",[\"vzDance\",1000] ,2]\n").start();
-        else new CommandWorkerThread("[\"animate\",[\"wave\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"vzDance\",10] ,2]\n");
+        else _commandWorker.newCommand("[\"animate\",[\"wave\",10] ,2]\n");
     }
 
     public void onMixedClick(View v) {
@@ -364,13 +368,13 @@ public class MainActivity extends Activity {
         int num = ran.nextInt(1);
         Log.i(MIX, String.valueOf(num));
         if (num == 0)
-            new CommandWorkerThread("[\"animate\",[\"phiThetaMixed\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"phiThetaMixed\",10] ,2]\n");
         else
-            new CommandWorkerThread("[\"animate\",[\"doublePhiThetaMixed\",1000] ,2]\n").start();
+            _commandWorker.newCommand("[\"animate\",[\"doublePhiThetaMixed\",10] ,2]\n");
     }
 
     public void landCommandClick(View v) {
-        new CommandWorkerThread("[\"land\",[],1]\n").start();
+        _commandWorker.newCommand("[\"land\",[],1]\n");
         Button land = (Button) findViewById(R.id.land_btn);
         Button takeOff = (Button) findViewById(R.id.takeoff_btn);
         land.setVisibility(View.INVISIBLE);
@@ -415,36 +419,6 @@ public class MainActivity extends Activity {
         }
     }
 
-
-    private class CommandWorkerThread extends Thread {
-
-        private String _command = "";
-
-        public CommandWorkerThread(String command) {
-            _command = command;
-        }
-
-        @Override
-        public void run() {
-            try {
-
-                Log.i(TAG, "sending request");
-                dataOutputStream.writeBytes(_command);
-                dataInputStream.readFully(response);
-                dataOutputStream.flush();
-
-            } catch (UnknownHostException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private class AccelerometerSensorListener implements SensorEventListener {
 
         private float x;
@@ -476,20 +450,20 @@ public class MainActivity extends Activity {
 //            Log.i("Sensor Listener", "linear_acceleration "+linear_acceleration[0]+" "+linear_acceleration[1]+" "+linear_acceleration[2]);
             if (_isControl) {
                 if (x >= 0) {
-                    new CommandWorkerThread("[\"back\",[" + x + "],2]\n").start();
+                    _commandWorker.newCommand("[\"back\",[" + x + "],2]\n");
                     Log.i("Gravity", "back = " + x);
                 } else {
                     x = Math.abs(x);
-                    new CommandWorkerThread("[\"front\",[" + x + "],2]\n").start();
+                    _commandWorker.newCommand("[\"front\",[" + x + "],2]\n");
                     Log.i("Gravity", "front = " + x);
                 }
 
                 if (y >= 0) {
-                    new CommandWorkerThread("[\"right\",[" + y + "],2]\n").start();
+                    _commandWorker.newCommand("[\"right\",[" + y + "],2]\n");
                     Log.i("Gravity", "Right = " + y);
                 } else {
                     y = Math.abs(y);
-                    new CommandWorkerThread("[\"left\",[" + y + "],2]\n").start();
+                    _commandWorker.newCommand("[\"left\",[" + y + "],2]\n");
                     Log.i("Gravity", "left = " + y);
                 }
             }

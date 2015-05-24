@@ -150,11 +150,11 @@
 
                     </RelativeLayout>
 
-                    <LinearLayout
+                    <com.example.utilizador.ass5.CloserView
                         android:id="@+id/tabCloser"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
-                        android:orientation="vertical"></LinearLayout>
+                        android:orientation="vertical"/>
 
                     <RelativeLayout
                         android:id="@+id/Tricks"
