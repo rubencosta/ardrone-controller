@@ -74,13 +74,9 @@ public class CloserView extends View {
     }
 
     private class MyScaleDetector implements ScaleGestureDetector.OnScaleGestureListener {
-        float _scaleFactor = 1f;
-        float _velocity;
 
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
-
-            _velocity = (scaleGestureDetector.getCurrentSpan() - scaleGestureDetector.getPreviousSpan()) * 0.1f;
 
             if (_scaleGestureDetector.getScaleFactor() > 1) {
                 _commandWorker.newCommand("[\"front\",[0.7],2]\n");
