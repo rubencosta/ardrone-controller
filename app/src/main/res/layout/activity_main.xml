@@ -1,16 +1,23 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
+    tools:context=".MainActivity"
 
     >
-
+    <RelativeLayout
+        android:id="@+id/relativeLayoutVideoView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+    </RelativeLayout>
     <TabHost
+        android:id="@+id/tabHost"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/tabHost"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
 
@@ -19,202 +26,194 @@
             android:layout_height="fill_parent"
             android:orientation="vertical">
 
-            <TabWidget
-                android:id="@android:id/tabs"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                />
 
-            <FrameLayout
-                android:id="@android:id/tabcontent"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent">
-
-                <RelativeLayout
-                    android:id="@+id/tabFly"
+                <TabWidget
+                    android:id="@android:id/tabs"
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:orientation="vertical"
-                    >
+                    android:layout_height="wrap_content" />
+
+                <FrameLayout
+                    android:id="@android:id/tabcontent"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
 
                     <RelativeLayout
+                        android:id="@+id/tabFly"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
-                        android:id="@+id/relativeLayoutVideoView"/>
-
-                    <Button
-                        android:layout_width="80dp"
-                        android:layout_height="50dp"
-                        android:id="@+id/takeoff_btn"
-                        android:background="@drawable/path3358"
-                        android:outlineProvider="paddedBounds"
-                        android:onClick="onTakeOffClick"
-                        android:layout_alignParentBottom="true"
-                        android:visibility="visible"
-                        android:layout_marginBottom="8dp"
-                        android:clickable="true"/>
-
-                    <Button
-                        android:layout_width="80dp"
-                        android:layout_height="50dp"
-                        android:id="@+id/land_btn"
-                        android:background="@drawable/lannd2"
-                        android:clickable="true"
-                        android:outlineProvider="paddedBounds"
-                        android:visibility="invisible"
-                        android:onClick="landCommandClick"
-                        android:layout_alignParentBottom="true"
-                        android:layout_marginBottom="8dp"/>
-
-                    <Button
-                        android:layout_width="80dp"
-                        android:layout_height="50dp"
-                        android:id="@+id/left_btn"
-                        android:background="@drawable/rotate_left"
-                        android:layout_centerVertical="true"
-                        android:outlineProvider="paddedBounds"
-
-                        />
-
-                    <Button
-                        android:layout_width="80dp"
-                        android:layout_height="50dp"
-                        android:id="@+id/right_btn"
-                        android:outlineProvider="paddedBounds"
-                        android:background="@drawable/rotate_right"
-                        android:layout_centerVertical="true"
-                        android:layout_alignParentRight="true"
-                        android:layout_marginRight="8dp"/>
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Control"
-                        android:id="@+id/control_btn"
-                        android:layout_alignParentBottom="true"
-                        android:layout_alignParentRight="true"
-                        android:layout_alignParentEnd="true"
-                        android:layout_gravity="center_horizontal"
-                        android:outlineProvider="paddedBounds"
-                  />
-
-                    <Button
-
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:id="@+id/record_btn"
-                        android:background="@drawable/record"
-                        android:outlineProvider="paddedBounds"
-                        android:layout_alignParentBottom="true"
-                        android:layout_marginLeft="200dp"
-                        android:layout_marginBottom="8dp"
-                        />
-
-                    <Button
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:id="@+id/picture_btn"
-                        android:background="@drawable/picture"
-                        android:layout_marginLeft="350dp"
-                        android:layout_marginTop="5dp"
-                        android:outlineProvider="paddedBounds"
-                        android:layout_alignParentBottom="true"
-                        android:layout_marginBottom="8dp"/>
-
-                    <Button
-                        android:layout_width="80dp"
-                        android:layout_height="50dp"
-                        android:background="@drawable/up"
-                        android:layout_alignParentTop="true"
-                        android:layout_marginTop="8dp"
-                        android:outlineProvider="paddedBounds"
-                        android:id="@+id/up_btn"
-                    />
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:text="Config"
-                        android:onClick="onConfigClick"/>
-
-                    <Button
-                        android:layout_width="80dp"
-                        android:layout_height="50dp"
-                        android:background="@drawable/down"
-                        android:layout_alignParentRight="true"
-                        android:layout_marginRight="8dp"
-                        android:layout_marginTop="8dp"
-                        android:outlineProvider="paddedBounds"
-                        android:id="@+id/down_btn"
-                        />
-
-                </RelativeLayout>
-
-                <LinearLayout
-                    android:id="@+id/tabCloser"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:orientation="vertical"></LinearLayout>
-
-                <RelativeLayout
-                    android:id="@+id/Tricks"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:orientation="vertical"
-                    >
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Flip"
-                        android:id="@+id/flip_btn"
-                        android:onClick="onFlipAheadClick" />
+                        android:orientation="vertical">
 
 
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Phi"
-                        android:id="@+id/phi_btn"
-                        android:onClick="onPhiM30DegClick"
-                        android:layout_centerHorizontal="true"/>
+                        <Button
+                            android:id="@+id/takeoff_btn"
+                            android:layout_width="80dp"
+                            android:layout_height="50dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginBottom="8dp"
+                            android:background="@drawable/path3358"
+                            android:clickable="true"
+                            android:onClick="onTakeOffClick"
+                            android:outlineProvider="paddedBounds"
+                            android:visibility="visible" />
 
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Dance"
-                        android:onClick="onDanceClick"
-                        android:layout_alignParentRight="true"/>
+                        <Button
+                            android:id="@+id/land_btn"
+                            android:layout_width="80dp"
+                            android:layout_height="50dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginBottom="8dp"
+                            android:background="@drawable/lannd2"
+                            android:clickable="true"
+                            android:onClick="landCommandClick"
+                            android:outlineProvider="paddedBounds"
+                            android:visibility="invisible" />
 
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Theta"
-                        android:onClick="onThetaClick"
-                        android:layout_alignParentBottom="true"
-                        android:layout_alignParentLeft="true"/>
+                        <Button
+                            android:id="@+id/left_btn"
+                            android:layout_width="80dp"
+                            android:layout_height="50dp"
+                            android:layout_centerVertical="true"
+                            android:background="@drawable/rotate_left"
+                            android:outlineProvider="paddedBounds"
 
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Mixed"
-                        android:onClick="onMixedClick"
-                        android:layout_centerHorizontal="true"
-                        android:layout_alignParentBottom="true"/>
+                            />
 
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Turn"
-                        android:onClick="onTurnClick"
-                        android:layout_alignParentRight="true"
-                        android:layout_alignParentBottom="true"/>
+                        <Button
+                            android:id="@+id/right_btn"
+                            android:layout_width="80dp"
+                            android:layout_height="50dp"
+                            android:layout_alignParentRight="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginRight="8dp"
+                            android:background="@drawable/rotate_right"
+                            android:outlineProvider="paddedBounds" />
+
+                        <Button
+                            android:id="@+id/control_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_gravity="center_horizontal"
+                            android:outlineProvider="paddedBounds"
+                            android:text="Control" />
+
+                        <Button
+
+                            android:id="@+id/record_btn"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginLeft="200dp"
+                            android:background="@drawable/record"
+                            android:outlineProvider="paddedBounds" />
+
+                        <Button
+                            android:id="@+id/picture_btn"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginLeft="350dp"
+                            android:layout_marginTop="5dp"
+                            android:background="@drawable/picture"
+                            android:outlineProvider="paddedBounds" />
+
+                        <Button
+                            android:id="@+id/up_btn"
+                            android:layout_width="80dp"
+                            android:layout_height="50dp"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/up"
+                            android:outlineProvider="paddedBounds" />
+
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:onClick="onConfigClick"
+                            android:text="Config" />
+
+                        <Button
+                            android:id="@+id/down_btn"
+                            android:layout_width="80dp"
+                            android:layout_height="50dp"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginRight="8dp"
+                            android:layout_marginTop="8dp"
+                            android:background="@drawable/down"
+                            android:outlineProvider="paddedBounds" />
+
+                    </RelativeLayout>
+
+                    <LinearLayout
+                        android:id="@+id/tabCloser"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:orientation="vertical"></LinearLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/Tricks"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/flip_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="onFlipAheadClick"
+                            android:text="Flip" />
+
+
+                        <Button
+                            android:id="@+id/phi_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:onClick="onPhiM30DegClick"
+                            android:text="Phi" />
+
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:onClick="onDanceClick"
+                            android:text="Dance" />
+
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentLeft="true"
+                            android:onClick="onThetaClick"
+                            android:text="Theta" />
+
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:onClick="onMixedClick"
+                            android:text="Mixed" />
+
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentRight="true"
+                            android:onClick="onTurnClick"
+                            android:text="Turn" />
 
                     </RelativeLayout>
 
 
-            </FrameLayout>
+                </FrameLayout>
+
         </LinearLayout>
     </TabHost>
 

@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
     Button _down;
     Button _config;
 
-    private static final String videoUrl = "http://webcam.st-malo.com/axis-cgi/mjpg/video.cgi?resolution=352x288";
+    private static final String videoUrl = "http://88.53.197.250/axis-cgi/mjpg/video.cgi?resolution=320x240";
     String serverIPAdress;
     int serverPort;
 
