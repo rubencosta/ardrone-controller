@@ -118,7 +118,7 @@ public class _MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                 Log.i("Mjpeg","getting first frame");
                                 bm = mIn.readMjpegFrame();
                                 destRect = destRect(bm.getWidth(),bm.getHeight());
-                                c.drawColor(Color.BLACK);
+                                c.drawColor(Color.WHITE);
                                 c.drawBitmap(bm, null, destRect, p);
 
                                 if(showFps) {
@@ -204,7 +204,6 @@ public class _MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     }
     public void setSource(MjpegInputStream source) {
         mIn = source;
-        startPlayback();
     }
     public void setOverlayPaint(Paint p) {
         overlayPaint = p;

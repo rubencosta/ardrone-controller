@@ -22,6 +22,7 @@ import java.util.Properties;
  * Created by MITI on 08/05/15.
  */
 public class MjpegInputStream extends DataInputStream {
+    private static final String TAG = "MjepegInputStream";
     private final byte[] SOI_MARKER = { (byte) 0xFF, (byte) 0xD8 };
     private final byte[] EOF_MARKER = { (byte) 0xFF, (byte) 0xD9 };
     private final String CONTENT_LENGTH = "Content-Length";
@@ -29,30 +30,27 @@ public class MjpegInputStream extends DataInputStream {
     private final static int FRAME_MAX_LENGTH = 40000 + HEADER_MAX_LENGTH;
     private int mContentLength = -1;
 
-    public static MjpegInputStream read(String url) {
 
-        new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] params) {
-                DefaultHttpClient httpclient = new DefaultHttpClient();
-                HttpResponse res;
-                try {
-                    res = httpclient.execute(new HttpGet(URI.create("http://192.168.0.100:3002/nodecopter.mjpeg")));
-                    return new MjpegInputStream(res.getEntity().getContent());
-                } catch (ClientProtocolException e) {
-                    return null;
-                } catch (IOException e) {
-                    return null;
-                }
-            }
-        }.execute();
+    public MjpegInputStream read(String url) {
+
+        Log.i(TAG,"Creating input stream");
+
+        MjpecClientFactory fact = new MjpecClientFactory(url);
+
+        fact.start();
+        try {
+            fact.join();
+            return fact.getStream();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
 
         return null;
     }
 
-    public MjpegInputStream(InputStream in) {
-        super(new BufferedInputStream(in, FRAME_MAX_LENGTH));
+    public MjpegInputStream(InputStream iN) {
+        super(new BufferedInputStream(iN, FRAME_MAX_LENGTH));
     }
 
     private int getEndOfSeqeunce(DataInputStream in, byte[] sequence) throws IOException {
@@ -99,6 +97,41 @@ public class MjpegInputStream extends DataInputStream {
         skipBytes(headerLen);
         readFully(frameData);
         return BitmapFactory.decodeStream(new ByteArrayInputStream(frameData));
+    }
+
+    private class MjpecClientFactory extends Thread{
+
+        private MjpegInputStream stream = null;
+        String _url ;
+
+        public MjpecClientFactory(String url){
+            _url=url;
+        }
+
+        @Override
+        public void run(){
+
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+            HttpResponse res;
+            try {
+                res = httpclient.execute(new HttpGet(URI.create(_url)));
+                //Log.i(TAG, res.toString()+" "+res.getEntity().toString()+" "+res.getEntity().getContent().toString());
+                MjpegInputStream result = new MjpegInputStream(res.getEntity().getContent());
+                stream = result;
+                Log.i(TAG, "client created");
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+
+        public MjpegInputStream getStream(){
+            return stream;
+        }
     }
 
 

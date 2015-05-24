@@ -13,9 +13,11 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TabHost;
 
 import com.example.utilizador.ass5.mjpeg.MjpegInputStream;
+import com.example.utilizador.ass5.mjpeg._MjpegView;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -49,7 +51,6 @@ public class MainActivity extends Activity {
     DataInputStream dataInputStream = null;
 
 
-
     TabHost _tab;
 
     Boolean _isControl = false;
@@ -65,10 +66,13 @@ public class MainActivity extends Activity {
     Button _down;
     Button _config;
 
+    private static final String videoUrl = "http://webcam.st-malo.com/axis-cgi/mjpg/video.cgi?resolution=352x288";
     String serverIPAdress;
     int serverPort;
 
-    MjpegInputStream _videoInputStream;
+    private MjpegInputStream _videoInputStream;
+    private RelativeLayout _videoLayout;
+    private _MjpegView _mjpegView;
 
     byte[] response = new byte[256];
 
@@ -92,15 +96,25 @@ public class MainActivity extends Activity {
 
         serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
 
-        //Initialize video input stream
-        _videoInputStream = new MjpegInputStream(null);
 
-        //TODO Initialize video view
+        //Initialize video
+        _videoLayout = (RelativeLayout) findViewById(R.id.relativeLayoutVideoView);
+
+        _videoInputStream = new MjpegInputStream(null);
+        _videoInputStream = _videoInputStream.read(videoUrl);
+
+        _mjpegView = new _MjpegView(this);
+        _mjpegView.setSource(_videoInputStream);
+        _mjpegView.setDisplayMode(_mjpegView.SIZE_BEST_FIT);
+        _mjpegView.startPlayback();
+        _mjpegView.showFps(true);
+        _videoLayout.addView(_mjpegView);
 
         //Tab Creation
         _tab = (TabHost) findViewById(R.id.tabHost);
         setupTabs();
 
+        //Buttons
         _rotateLeft = (Button) findViewById(R.id.left_btn);
         _rotateRight = (Button) findViewById(R.id.right_btn);
         _up = (Button) findViewById(R.id.up_btn);
@@ -140,10 +154,10 @@ public class MainActivity extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                   _isRight = true;
+                    _isRight = true;
                     onRight();
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                   _isRight = false;
+                    _isRight = false;
                     onRight();
                 }
                 return false;
@@ -161,7 +175,7 @@ public class MainActivity extends Activity {
 
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
                     _isUp = false;
-                   onUp();
+                    onUp();
                 }
                 return false;
             }
@@ -176,7 +190,7 @@ public class MainActivity extends Activity {
                     _isDown = true;
                     onDown();
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    _isDown =false;
+                    _isDown = false;
                     onDown();
                 }
                 return false;
@@ -220,28 +234,26 @@ public class MainActivity extends Activity {
     }
 
     private void onLeft() {
-           if(_isLeft == true) {
-               new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
-               Log.i("Button", "Clockwise");
-           }
-           else {
-                new CommandWorkerThread("[\"stop\",[],1]\n").start();
-                Log.i("Button", "counterClockwise-stop");
-           }
-    }
-
-    public void onRight() {
-        if(_isRight == true) {
-            new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
-            Log.i("Button", "counterClockwise");
-        }
-        else {
+        if (_isLeft == true) {
+            new CommandWorkerThread("[\"clockwise\",[0.7],1]\n").start();
+            Log.i("Button", "Clockwise");
+        } else {
             new CommandWorkerThread("[\"stop\",[],1]\n").start();
             Log.i("Button", "counterClockwise-stop");
         }
     }
 
-    public void connectSocket(){
+    public void onRight() {
+        if (_isRight == true) {
+            new CommandWorkerThread("[\"counterClockwise\",[0.7],1]\n").start();
+            Log.i("Button", "counterClockwise");
+        } else {
+            new CommandWorkerThread("[\"stop\",[],1]\n").start();
+            Log.i("Button", "counterClockwise-stop");
+        }
+    }
+
+    public void connectSocket() {
         new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] params) {
@@ -257,24 +269,22 @@ public class MainActivity extends Activity {
         }.execute();
     }
 
-    public void onUp(){
-        if(_isUp) {
+    public void onUp() {
+        if (_isUp) {
             new CommandWorkerThread("[\"up\",[0.7],2]\n").start();
             Log.i("Button", "up");
-        }
-        else {
+        } else {
             new CommandWorkerThread("[\"stop\",[],1]\n").start();
             Log.i("Button", "up stop");
         }
 
     }
 
-    public void onDown(){
-        if(_isDown) {
+    public void onDown() {
+        if (_isDown) {
             new CommandWorkerThread("[\"down\",[0.7],2]\n").start();
             Log.i("Button", "down");
-        }
-        else {
+        } else {
             new CommandWorkerThread("[\"stop\",[],1]\n").start();
             Log.i("Button", "down stop");
         }
@@ -362,8 +372,6 @@ public class MainActivity extends Activity {
     }
 
 
-
-
     /*public void onLeftClick(View v){
         new CommandWorkerThread("[\"left\",[0.2],2]\n").start();
     }
@@ -415,7 +423,7 @@ public class MainActivity extends Activity {
         startActivity(i);
     }*/
 
-    public void onConfigClick(View v){
+    public void onConfigClick(View v) {
         Intent i = new Intent(this, Configs.class);
         startActivity(i);
     }
@@ -501,34 +509,31 @@ public class MainActivity extends Activity {
             gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
 
             // Remove the gravity contribution with the high-pass filter.
-            linear_acceleration[0] = sensorEvent.values[0] - gravity[0];
+            /*linear_acceleration[0] = sensorEvent.values[0] - gravity[0];
             linear_acceleration[1] = sensorEvent.values[1] - gravity[1];
-            linear_acceleration[2] = sensorEvent.values[2] - gravity[2];
+            linear_acceleration[2] = sensorEvent.values[2] - gravity[2];*/
 
 
             x = (float) ((gravity[0]) * 0.1);
             y = (float) ((gravity[1]) * 0.1);
 
-            Log.i("Sensor Listener", "gravity "+x + " y: " + y); //[0] =x, frente-tras ; [1] = y, esquerda-direita
-            Log.i("Sensor Listener", "linear_acceleration "+linear_acceleration[0]+" "+linear_acceleration[1]+" "+linear_acceleration[2]);
-            if(_isControl){
-                if(x >= 0) {
+//            Log.i("Sensor Listener", "gravity "+x + " y: " + y); //[0] =x, frente-tras ; [1] = y, esquerda-direita
+//            Log.i("Sensor Listener", "linear_acceleration "+linear_acceleration[0]+" "+linear_acceleration[1]+" "+linear_acceleration[2]);
+            if (_isControl) {
+                if (x >= 0) {
                     new CommandWorkerThread("[\"back\",[" + x + "],2]\n").start();
                     Log.i("Gravity", "back = " + x);
-                }
-
-                else {
-                    x= Math.abs(x);
+                } else {
+                    x = Math.abs(x);
                     new CommandWorkerThread("[\"front\",[" + x + "],2]\n").start();
                     Log.i("Gravity", "front = " + x);
                 }
 
-                if( y >= 0) {
+                if (y >= 0) {
                     new CommandWorkerThread("[\"right\",[" + y + "],2]\n").start();
                     Log.i("Gravity", "Right = " + y);
-                }
-                else{
-                    y= Math.abs(y);
+                } else {
+                    y = Math.abs(y);
                     new CommandWorkerThread("[\"left\",[" + y + "],2]\n").start();
                     Log.i("Gravity", "left = " + y);
                 }
