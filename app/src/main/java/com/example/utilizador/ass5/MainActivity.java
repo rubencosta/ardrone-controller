@@ -38,7 +38,6 @@ public class MainActivity extends Activity {
     private static final String TURN = "Turn";
 
     float[] gravity = {0, 0, 0};
-    float[] linear_acceleration = {0, 0, 0};
     final float alpha = 0.8f;
 
     private SensorManager _sensorManager;
