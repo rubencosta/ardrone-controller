@@ -23,7 +23,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Random;
 
 
@@ -36,38 +35,28 @@ public class MainActivity extends Activity {
     private static final String THETA = "Theta";
     private static final String DANCE = "Dance";
     private static final String TURN = "Turn";
-
-    float[] gravity = {0, 0, 0};
+    private static String videoUrl = "http://88.53.197.250/axis-cgi/mjpg/video.cgi?resolution=320x240";
     final float alpha = 0.8f;
-
-    private SensorManager _sensorManager;
-    private Sensor _accSensor;
-
-    private AccelerometerSensorListener _accListener = new AccelerometerSensorListener();
-
+    float[] gravity = {0, 0, 0};
     Socket socket = null;
     DataOutputStream dataOutputStream = null;
     DataInputStream dataInputStream = null;
-
-
     TabHost _tab;
-
     Boolean _isControl = false;
     Boolean _isUp = false;
     Boolean _isDown = false;
     Boolean _isRight = false;
     Boolean _isLeft = false;
-
     Button _control;
     Button _rotateLeft;
     Button _rotateRight;
     Button _up;
     Button _down;
-
-    private static final String videoUrl = "http://88.53.197.250/axis-cgi/mjpg/video.cgi?resolution=320x240";
     String serverIPAdress;
     int serverPort;
-
+    private SensorManager _sensorManager;
+    private Sensor _accSensor;
+    private AccelerometerSensorListener _accListener = new AccelerometerSensorListener();
     private MjpegInputStream _videoInputStream;
     private RelativeLayout _videoLayout;
     private _MjpegView _mjpegView;
@@ -90,6 +79,7 @@ public class MainActivity extends Activity {
 
 
         //Initialize video
+        videoUrl = "http://" + Settings.get(Settings.SERVER_IP) + ":3002/nodecopter.mjpeg";
         _videoLayout = (RelativeLayout) findViewById(R.id.relativeLayoutVideoView);
 
         _videoInputStream = new MjpegInputStream(null);
@@ -374,9 +364,11 @@ public class MainActivity extends Activity {
             linear_acceleration[2] = sensorEvent.values[2] - gravity[2];*/
 
 
-            x = (float) ((gravity[0]) * 0.1);
-            y = (float) ((gravity[1]) * 0.1);
+            x = (float) ((gravity[0])/10f);
+            y = (float) ((gravity[1])/10f);
 
+            x= Math.round(x*10)/10f;
+            y= Math.round(y*10)/10f;
 //            Log.i("Sensor Listener", "gravity "+x + " y: " + y); //[0] =x, frente-tras ; [1] = y, esquerda-direita
 //            Log.i("Sensor Listener", "linear_acceleration "+linear_acceleration[0]+" "+linear_acceleration[1]+" "+linear_acceleration[2]);
             if (_isControl) {
@@ -407,6 +399,7 @@ public class MainActivity extends Activity {
     private class MyOnTouchListener implements View.OnTouchListener {
         float _x;
         float _y;
+
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
             _x = motionEvent.getX();
@@ -432,13 +425,20 @@ public class MainActivity extends Activity {
     }
 
     private class MyJoystickMovedListener implements JoystickMovedListener {
+        float _pan;
+        float _tilt;
+
         @Override
         public void OnMoved(int pan, int tilt) {
-            Log.i("JOY-X", String.valueOf(pan));
-            _commandWorker.newCommand("[\"counterClockwise\",[" + (pan * 0.1) + "],2]\n");
+            _pan = Math.round(pan) / 10;
+            _pan = _pan > 0.7f ? 0.7f : _pan;
+            _tilt = Math.round(tilt) / 10;
+            _tilt = _tilt > 0.4f ? 0.4f : _tilt;
+            Log.i("JOY-X", String.valueOf(_pan));
+            _commandWorker.newCommand("[\"counterClockwise\",[" + (_pan) + "],2]\n");
 
-            Log.i("JOY-Y", String.valueOf(tilt));
-            _commandWorker.newCommand("[\"down\",[" + (tilt * 0.1) + "],2]\n");
+            Log.i("JOY-Y", String.valueOf(_tilt));
+            _commandWorker.newCommand("[\"down\",[" + (_tilt) + "],2]\n");
 
         }
 
