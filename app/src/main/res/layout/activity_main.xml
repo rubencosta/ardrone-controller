@@ -11,15 +11,20 @@
     >
     <RelativeLayout
         android:id="@+id/relativeLayoutVideoView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_centerVertical="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_width="800dp"
+        android:layout_height="285dp">
     </RelativeLayout>
+
     <TabHost
         android:id="@+id/tabHost"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        >
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -30,7 +35,9 @@
                 <TabWidget
                     android:id="@android:id/tabs"
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:background="@color/background_floating_material_light"
+                    />
 
                 <FrameLayout
                     android:id="@android:id/tabcontent"
@@ -48,71 +55,58 @@
                             android:layout_width="100dp"
                             android:layout_height="100dp"
                             android:visibility="visible"
+                            android:layout_marginLeft="20dp"
                             />
                         <Button
                             android:id="@+id/takeoff_btn"
                             android:layout_width="80dp"
                             android:layout_height="50dp"
                             android:layout_alignParentBottom="true"
-                            android:layout_marginBottom="8dp"
+                            android:layout_marginBottom="5dp"
                             android:background="@drawable/path3358"
                             android:clickable="true"
                             android:onClick="onTakeOffClick"
                             android:outlineProvider="paddedBounds"
-                            android:visibility="visible" />
+                            android:visibility="visible"
+                            android:layout_marginLeft="5dp"/>
 
                         <Button
                             android:id="@+id/land_btn"
                             android:layout_width="80dp"
                             android:layout_height="50dp"
                             android:layout_alignParentBottom="true"
-                            android:layout_marginBottom="8dp"
+                            android:layout_marginBottom="5dp"
                             android:background="@drawable/lannd2"
                             android:clickable="true"
                             android:onClick="landCommandClick"
                             android:outlineProvider="paddedBounds"
-                            android:visibility="invisible" />
+                            android:visibility="invisible"
+                            android:layout_marginLeft="5dp"/>
 
                         <Button
                             android:id="@+id/control_btn"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="80dp"
+                            android:layout_height="50dp"
                             android:layout_alignParentBottom="true"
                             android:layout_alignParentEnd="true"
                             android:layout_alignParentRight="true"
                             android:layout_gravity="center_horizontal"
                             android:outlineProvider="paddedBounds"
-                            android:text="Control" />
+                            android:background="@drawable/control2"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginBottom="5dp"
+                            />
 
                         <Button
-
-                            android:id="@+id/record_btn"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginBottom="8dp"
-                            android:layout_marginLeft="200dp"
-                            android:background="@drawable/record"
-                            android:outlineProvider="paddedBounds" />
-
-                        <Button
-                            android:id="@+id/picture_btn"
-                            style="?android:attr/buttonStyleSmall"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginBottom="8dp"
-                            android:layout_marginLeft="350dp"
-                            android:layout_marginTop="5dp"
-                            android:background="@drawable/picture"
-                            android:outlineProvider="paddedBounds" />
-
-                        <Button
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerHorizontal="true"
+                            android:layout_width="60dp"
+                            android:layout_height="50dp"
+                            android:layout_alignParentRight="true"
                             android:onClick="onConfigClick"
-                            android:text="Config" />
+                            android:background="@drawable/config2"
+                            android:outlineProvider="paddedBounds"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginTop="5dp"
+                            />
 
 
 

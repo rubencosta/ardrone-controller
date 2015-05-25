@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
 
 
         //Initialize video
-        videoUrl = "http://" + Settings.get(Settings.SERVER_IP) + ":3002/nodecopter.mjpeg";
+//        videoUrl = "http://" + Settings.get(Settings.SERVER_IP) + ":3002/nodecopter.mjpeg";
         _videoLayout = (RelativeLayout) findViewById(R.id.relativeLayoutVideoView);
 
         _videoInputStream = new MjpegInputStream(null);
@@ -391,35 +391,6 @@ public class MainActivity extends Activity {
                 }
             }
 
-
-        }
-    }
-
-
-    private class MyOnTouchListener implements View.OnTouchListener {
-        float _x;
-        float _y;
-
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            _x = motionEvent.getX();
-            _y = motionEvent.getY();
-
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    startJoystick(_x, _y);
-                    break;
-                case MotionEvent.ACTION_MOVE:
-//                    moveJoystick(_x, _y);
-                    break;
-                case MotionEvent.ACTION_UP:
-//                    stopJoystick();
-                    break;
-            }
-            return true;
-        }
-
-        private void startJoystick(float x, float y) {
 
         }
     }
