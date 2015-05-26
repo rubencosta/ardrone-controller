@@ -74,10 +74,6 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-
-        _commandWorker = new CommandWorker();
-
-
         //Initialize video
 //        videoUrl = "http://" + Settings.get(Settings.SERVER_IP) + ":3002/nodecopter.mjpeg";
         _videoLayout = (RelativeLayout) findViewById(R.id.relativeLayoutVideoView);
@@ -88,7 +84,6 @@ public class MainActivity extends Activity {
         _mjpegView = new _MjpegView(this);
         _mjpegView.setSource(_videoInputStream);
         _mjpegView.setDisplayMode(_mjpegView.SIZE_BEST_FIT);
-        _mjpegView.startPlayback();
         _mjpegView.showFps(true);
         _videoLayout.addView(_mjpegView);
 
@@ -114,9 +109,28 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        connectSocket();
-        serverIPAdress = Settings.get(Settings.SERVER_IP);
-        serverPort = Integer.parseInt(Settings.get(Settings.SERVER_PORT));
+        _mjpegView = new _MjpegView(this);
+        _mjpegView.setSource(_videoInputStream);
+        _mjpegView.setDisplayMode(_mjpegView.SIZE_BEST_FIT);
+        _mjpegView.showFps(true);
+        _videoLayout.addView(_mjpegView);
+        _mjpegView.startPlayback();
+
+        _commandWorker = new CommandWorker();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        _mjpegView.stopPlayback();
+        _videoLayout.removeView(_mjpegView);
+        _mjpegView = null;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        _commandWorker.closeConnection();
     }
 
     private void setupButtons() {
@@ -154,64 +168,6 @@ public class MainActivity extends Activity {
         tabSpec.setContent(R.id.Tricks);
         tabSpec.setIndicator("Tricks Mode");
         _tab.addTab(tabSpec);
-    }
-
-    public void connectSocket() {
-        new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] params) {
-                try {
-                    socket = new Socket(serverIPAdress, serverPort);
-                    dataOutputStream = new DataOutputStream(socket.getOutputStream());
-                    dataInputStream = new DataInputStream(socket.getInputStream());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        }.execute();
-    }
-
-    private void onLeft() {
-        if (_isLeft == true) {
-            _commandWorker.newCommand("[\"clockwise\",[0.7],1]\n");
-            Log.i("Button", "Clockwise");
-        } else {
-            _commandWorker.newCommand("[\"stop\",[],1]\n");
-            Log.i("Button", "counterClockwise-stop");
-        }
-    }
-
-    public void onRight() {
-        if (_isRight == true) {
-            _commandWorker.newCommand("[\"counterClockwise\",[0.7],1]\n");
-            Log.i("Button", "counterClockwise");
-        } else {
-            _commandWorker.newCommand("[\"stop\",[],1]\n");
-            Log.i("Button", "counterClockwise-stop");
-        }
-    }
-
-    public void onUp() {
-        if (_isUp) {
-            _commandWorker.newCommand("[\"up\",[0.7],2]\n");
-            Log.i("Button", "up");
-        } else {
-            _commandWorker.newCommand("[\"stop\",[],1]\n");
-            Log.i("Button", "up stop");
-        }
-
-    }
-
-    public void onDown() {
-        if (_isDown) {
-            _commandWorker.newCommand("[\"down\",[0.7],2]\n");
-            Log.i("Button", "down");
-        } else {
-            _commandWorker.newCommand("[\"stop\",[],1]\n");
-            Log.i("Button", "down stop");
-        }
-
     }
 
     public void onTakeOffClick(View v) {
@@ -358,14 +314,8 @@ public class MainActivity extends Activity {
             gravity[1] = alpha * gravity[1] + (1 - alpha) * sensorEvent.values[1];
             gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
 
-            // Remove the gravity contribution with the high-pass filter.
-            /*linear_acceleration[0] = sensorEvent.values[0] - gravity[0];
-            linear_acceleration[1] = sensorEvent.values[1] - gravity[1];
-            linear_acceleration[2] = sensorEvent.values[2] - gravity[2];*/
-
-
-            x = (float) ((gravity[0])/10f);
-            y = (float) ((gravity[1])/10f);
+            x = ((gravity[0])/10f);
+            y = ((gravity[1])/10f);
 
             x= Math.round(x*10)/10f;
             y= Math.round(y*10)/10f;
