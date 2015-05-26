@@ -43,17 +43,8 @@ public class MainActivity extends Activity {
     DataInputStream dataInputStream = null;
     TabHost _tab;
     Boolean _isControl = false;
-    Boolean _isUp = false;
-    Boolean _isDown = false;
-    Boolean _isRight = false;
-    Boolean _isLeft = false;
     Button _control;
-    Button _rotateLeft;
-    Button _rotateRight;
-    Button _up;
-    Button _down;
-    String serverIPAdress;
-    int serverPort;
+
     private SensorManager _sensorManager;
     private Sensor _accSensor;
     private AccelerometerSensorListener _accListener = new AccelerometerSensorListener();
@@ -75,7 +66,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         //Initialize video
-//        videoUrl = "http://" + Settings.get(Settings.SERVER_IP) + ":3002/nodecopter.mjpeg";
+        videoUrl = "http://" + Settings.get(Settings.SERVER_IP) + ":3002/nodecopter.mjpeg";
         _videoLayout = (RelativeLayout) findViewById(R.id.relativeLayoutVideoView);
 
         _videoInputStream = new MjpegInputStream(null);
